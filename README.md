@@ -1,5 +1,3 @@
-# hi-python-individual-assessment
-
 # Hyper Island Python Course Assessment  
 
 
