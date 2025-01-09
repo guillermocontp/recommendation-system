@@ -3,17 +3,18 @@
 
 The goal of this sprint project is to analyse Billboard data from the last 25 years, combined with Spotify Track Audio data.
 ---
+
 Main question: 
 - What makes a hit song?  
 
 Sub questions: 
-- How long does a hit song maintain its position on the billboards?
-- Do hit songs have seasonal trends? 
-- What is the "musical fingerprint" (song attribite) of hit songs (according to billboards)? 
-- What is the current "musical fingerprint" (song attribite) of hit songs (according to spotify popularity score)? 
+- What is the overal "musical fingerprint" of a hit song? 
+- How has the "musical fingerprint" changed over the years? 
+- Is there sesonal trends to the "musical fingerprint" (for example summer vs christmas)? 
+- Is there a correlation between billboard charts and Spotifys popularity score? (and sesonal trends)
+- Is there a correlation between billboard charts and artists (and sesonal trends)
+- Is there a correlation between billboard charts and genre? (and sesonal trends)
 - Is there a difference to the "musical fingerprints" within the top 10% and bottom 10%? 
-- Is there seasonality to the "musical fingerprints" (monthly, weekly)? 
-- Has the "musical fingerprint" changed over the years? 
 
 ---
 Requirements: 
