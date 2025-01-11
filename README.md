@@ -1,36 +1,40 @@
-# Hyper Island Python Course Assessment  
+# Hyper Island Python Course Assessment
 
-The goal of this sprint project is to analyse Billboard data from the last 25 years, combined with Spotify Track Audio data.
 ---
 
-## What makes a hit song?  
+# Exploratory Analysis: What Makes a Hit Song?
 
-What is the chart structure?
-- Do all charts contain 100 songs each? 
+## Introduction
+
+The goal of this exploratory analysis is to examine Billboard data from the last 25 years, combined with Spotify Track Audio data. By analyzing this data, we aim to uncover patterns and insights that define what makes a hit song.
+
+## Data Sources
+
+- **Billboard Data**: Historical chart data from the Billboard Hot 100.
+- **Spotify Track Audio Data**: Audio features for tracks available on Spotify.
+
+## Analysis Questions
+
+### Chart Structure
+- Do all charts contain 100 songs each?
 - How often is a song featured on the charts on average?
-- What is the maximum number of times a aong has been featured on the charts?
+- What is the maximum number of times a song has been featured on the charts?
 
-What is the average audio features of a hit song?
-- What was the average audio features for the past 24 years? 
-- What was the average audio features for 2000? 
-- What was the average audio features for 2000?
+### Average Audio Features of a Hit Song
+- What were the average audio features for the past 24 years?
+- What were the average audio features for 2024?
+- What were the average audio features for 2000?
 - Is there a difference in average audio features between the top 10% and the remaining listings?
 
-How has the average audio features changed over the years? 
+### Changes in Average Audio Features Over the Years
 - Are there yearly trends in the average audio features?
-- Is there a difference yearly trends between the top 10% and the remaining listings?
+- Is there a difference in yearly trends between the top 10% and the remaining listings?
 - Are there seasonal trends in the average audio features?
 
-Is there a correlation between artists and their chart placements?
-- Is there a correlation between artists Spotifys popularity score and their chart placements?
-- Is there a correlation between artists Spotify followers and their chart placements?
+### Correlation Between Artists and Their Chart Placements
+- Is there a correlation between artists' Spotify popularity score and their chart placements?
+- Is there a correlation between artists' Spotify followers and their chart placements?
 
-Questions to be awnsered
-Is there a correlation between artists genre and their chart placements?
-Is there a correlation between album type and chart placements?
-Is there a correlation between song explicit and chart placements?
-IS there a diffrence in the average audio features between top 10% and the rest? 
+## Requirements
 
----
-Requirements: 
-- service_account.json in root
+- `service_account.json` in the root directory
