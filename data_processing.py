@@ -1,3 +1,13 @@
+import os 
+import pandas as pd
+from dotenv import load_dotenv
+from requests import post, get
+import base64
+import json
+from load_data import bigquery_authenticate, load_data, get_token
+
+
+# drop duplicates from dataframe
 def drop_duplicates(dataframe):
     
     import pandas as pd
@@ -41,7 +51,7 @@ def merge_chart_audio_features(chart_dataframe, audio_features_dataframe):
     return merged_dataframe
 
 
-# merging charts  with tracks 
+# merging charts with tracks 
 def merge_chart_track_features(chart_dataframe, track_dataframe):
     
     import pandas as pd
@@ -92,3 +102,53 @@ def aggregate_track_features(dataframe):
         'duration_ms': 'Duration (min)'
     })
     return agg_df
+
+# getting three top rated songs from each year
+def three_random_songs(dataframe):
+    
+    # sorting by list_position 1 to get top rated songs
+    sorted_dataframe = dataframe[dataframe['list_position'] == 1]
+    
+    # grouping by year and taking 3 random entries from each year
+    random_three = (sorted_dataframe
+        .groupby(sorted_dataframe['chart_week'].dt.year)
+        .apply(lambda x: x.sample(n=min(len(x), 3)))
+        .reset_index(drop=True)
+    )
+    
+    # drop list_position
+    random_three = random_three.drop('list_position', axis=1)
+    
+    return random_three
+
+
+# fetching data from spotify api
+def fetch_and_parse_spotify_data(dataframe):
+    # getting access token for authentication
+    token = get_token()
+    
+    # placeholder for parsed data
+    parsed_song_data = []
+
+    # iterate over dataframe rows to get both track_id and chart_week
+    for index, row in dataframe.iterrows():
+        # constructing the URL and headers for GET request
+        url = f'https://api.spotify.com/v1/tracks/{row["track_id"]}'
+        headers = {'Authorization': 'Bearer ' + token}
+        
+        # making the GET request
+        response = get(url, headers=headers)
+        data = response.json()
+        
+        # create clean song data with chart_week
+        clean_song_data = {
+            'chart_week': row['chart_week'],
+            'song_name': data['name'],
+            'artist_name': data['album']['artists'][0]['name'],
+            'spotify_url': data['external_urls']['spotify'],
+            'cover_image': data['album']['images'][0]['url']
+        }
+        parsed_song_data.append(clean_song_data)
+    
+    # create DataFrame from parsed data
+    return pd.DataFrame(parsed_song_data)

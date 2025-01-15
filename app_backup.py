@@ -3,9 +3,6 @@ import streamlit as st
 import pandas as pd 
 import plotly.express as px
 
-from visualization import plot_yearly_features, plot_single_feature, plot_feature_averages , plot_year_comparison, style_chart
-from filter import filter_data_by_years, prepare_yearly_feature_data, prepare_comparison_data
-
 # loading pre-processed data 
 audio_df = pd.read_csv('data/audio_data.csv')
 track_df = pd.read_csv('data/track_data.csv')
@@ -74,16 +71,30 @@ with col1:
         )
         
         # filtering data on selected years 
-        filtered_audio_df, filtered_track_df, avg_filtered_track_df = filter_data_by_years(audio_df, track_df, start_year, end_year)
+        filtered_audio_df = audio_df[(audio_df['year'] >= start_year) & (audio_df['year'] <= end_year)]
+        filtered_track_df = track_df[(track_df['year'] >= start_year) & (audio_df['year'] <= end_year)]
+        avg_filtered_track_df = filtered_track_df.mean()
         
         # if user selects all features 
         if feature_view == 'All Features':
             
             st.subheader('All Song Features Over Time')
-            
+           
             # plotting all features
-            fig = plot_yearly_features(filtered_audio_df)
+            yearly_means = filtered_audio_df.groupby('year')[features].mean().reset_index()
+            fig = px.line(
+                yearly_means,
+                x = 'year',
+                y = features,
+            )
+            
+            # xet x-axis tick interval to 1 year
+            fig.update_layout(
+            xaxis=dict(dtick=1) 
+            )
+            # display visualizations 
             st.plotly_chart(fig, use_container_width=True)
+            
             
             # creating three columns for metrics
             m1, m2, m3 = st.columns(3)
@@ -126,7 +137,19 @@ with col1:
             st.subheader(f'{selected_feature} Over Time')
             
             # plotting single feature
-            fig = plot_single_feature(filtered_audio_df, selected_feature)
+            yearly_means = filtered_audio_df.groupby('year')[selected_feature].mean().reset_index()
+            fig = px.line(
+                yearly_means,
+                x = 'year',
+                y = selected_feature,
+                #title=f'{selected_feature.title()} Trend Over Time'
+            )
+            # xet x-axis tick interval to 1 year
+            fig.update_layout(
+            xaxis=dict(dtick=1) 
+            )
+            
+            # display visualizations 
             st.plotly_chart(fig, use_container_width=True)
             
             # creating three columns for metrics
@@ -167,10 +190,19 @@ with col1:
         st.subheader(f'Average Song Features in {year}')
         
         # filtering data for selected year
-        melted_audio_df = prepare_yearly_feature_data(audio_df, year, features)
+        filtered_audio_df = audio_df[audio_df['year'] == year]
+        melted_audio_df = filtered_audio_df[features].mean().reset_index()
+        melted_audio_df.columns = ['Feature', 'Average Value']
         
-        # plot data for selected year
-        fig = plot_feature_averages(melted_audio_df)
+        fig = px.bar(
+            melted_audio_df,
+            x = 'Feature',
+            y = 'Average Value',
+            #title = f'Average Song Features in {year}',
+            template = 'plotly_white',
+        )
+        
+        # display visualizations 
         st.plotly_chart(fig, use_container_width=True)
         
          # creating three columns for metrics
@@ -217,11 +249,26 @@ with col1:
         # filtering data for each year
         audio_df_year1 = audio_df[audio_df['year'] == year1][features].mean()
         audio_df_year2 = audio_df[audio_df['year'] == year2][features].mean()
-       
-        comparison_audio_df = prepare_comparison_data(audio_df, year1, year2, features)
         
-        # showing comparison chart: 
-        fig = plot_year_comparison(comparison_audio_df)
+        # creating a DataFrame for comparison
+        comparison_audio_df = pd.DataFrame({
+            'Feature': features,
+            str(year1): audio_df_year1.values,
+            str(year2): audio_df_year2.values
+        }).melt(id_vars=['Feature'], var_name='Year', value_name='Value')
+        
+        # creating a bar chart for comparison
+        fig = px.bar(
+            comparison_audio_df,
+            x = 'Feature',
+            y = 'Value',
+            color = 'Year',
+            barmode = 'group',
+            #title = f'Average Song Feature Comparison: {year1} vs {year2}',
+            template = 'plotly_white',
+        )
+        
+        # display visualizations 
         st.plotly_chart(fig, use_container_width=True)
         
         st.subheader(f'{year1}')
@@ -287,8 +334,15 @@ with col1:
                 delta=f"{duration_delta} min"
             )  
 
-        # customizing the chart design 
-        fig = style_chart(fig)
+    # customizing the chart design 
+    fig.update_layout(
+        height=600,
+        showlegend=True,
+        xaxis_title='',
+        yaxis_title='Value',
+        yaxis=dict(range=[0, 1], tickmode='linear', dtick=0.1),
+        font=dict(color='#FFFFFF'),
+    )
     
     # Add space and divider
     st.markdown("<br>", unsafe_allow_html=True)
