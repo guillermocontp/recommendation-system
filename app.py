@@ -3,8 +3,8 @@ import streamlit as st
 import pandas as pd 
 import plotly.express as px
 
-from visualization import plot_yearly_features, plot_single_feature, plot_feature_averages , plot_year_comparison, style_chart
-from filter import filter_data_by_years, prepare_yearly_feature_data, prepare_comparison_data
+from src.visualization import plot_yearly_features, plot_single_feature, plot_feature_averages , plot_year_comparison, style_chart
+from src.filter import filter_data_by_years, prepare_yearly_feature_data, prepare_comparison_data
 
 # loading pre-processed data 
 audio_df = pd.read_csv('data/audio_data.csv')

@@ -1,6 +1,6 @@
 # importing functions for data loading and processing 
-from load_data import bigquery_authenticate, load_data, get_token
-from data_processing import drop_duplicates, convert_to_datetime, merge_chart_audio_features, aggregate_audio_features, merge_chart_track_features, aggregate_track_features, fetch_spotify_data, parse_spotify_data, three_random_songs, fetch_and_parse_spotify_data
+from src.load_data import bigquery_authenticate, load_data, get_token
+from src.data_processing import drop_duplicates, convert_to_datetime, merge_chart_audio_features, aggregate_audio_features, merge_chart_track_features, aggregate_track_features, fetch_spotify_data, parse_spotify_data, three_random_songs, fetch_and_parse_spotify_data
 import os 
 import pandas as pd
 from dotenv import load_dotenv
