@@ -50,7 +50,7 @@ token = get_token(client_id, client_secret)
 # loading pre-processed data 
 audio_df = pd.read_csv('data/audio_data.csv')
 track_df = pd.read_csv('data/track_data.csv')
-clean_chart_positions = pd.read_csv('data/chart_positions_clean.csv')
+spotify_songs = pd.read_csv('data/spotify_songs.csv')
 
 # customizing the page
 st.set_page_config(
@@ -123,8 +123,7 @@ with col1:
             
             # display track metrics
             display_metrics(avg_filtered_track_df, avg_data)
-
-            
+        
     # if user selects single year analysis
     elif analysis_type == 'Single Year Analysis':
     
@@ -186,12 +185,7 @@ with col1:
         
         # customizing the chart design 
         fig = style_chart(fig)
-    
-    # Add space and divider
-   # st.markdown("<br>", unsafe_allow_html=True)
-   # st.markdown("---")
-   # st.markdown("<br>", unsafe_allow_html=True)
-    
+        
     # Song Characteristics Descriptions
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
@@ -220,6 +214,7 @@ with col1:
 # column contains Spotify widgets that lead to spotify web player
 with col2:
     
+    # adding header
     st.header('Examples')
     st.markdown("---")
     st.write("")
@@ -227,7 +222,7 @@ with col2:
     # if user selects single year analysis
     if analysis_type == 'Timeline Analysis':
         
-        spotify_recommendations = filter_spotify_by_year(start_year, end_year, clean_chart_positions)
+        spotify_recommendations = filter_spotify_by_year(start_year, end_year, spotify_songs)
         
         # show recommendations 
         parsed_recommendations = fetch_and_parse_spotify_data(spotify_recommendations, token, client_id, client_secret)
@@ -237,7 +232,7 @@ with col2:
     # if user selects single year analysis
     elif analysis_type == 'Single Year Analysis':
         
-        spotify_recommendations =  filter_spotify_by_single_year(year, clean_chart_positions)
+        spotify_recommendations =  filter_spotify_by_single_year(year, spotify_songs)
         
         # show recommendations
         parsed_recommendations = fetch_and_parse_spotify_data(spotify_recommendations, token, client_id, client_secret)
@@ -247,7 +242,7 @@ with col2:
     # if user selects year comparison
     else:
 
-        year1_spotify_recommendations, year2_spotify_recommendations = filter_spotify_for_comparison(year1, year2, clean_chart_positions)
+        year1_spotify_recommendations, year2_spotify_recommendations = filter_spotify_for_comparison(year1, year2, spotify_songs)
         
         # show year 1 recommendations
         st.subheader(f'{year1}')

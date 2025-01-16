@@ -53,7 +53,7 @@ def fetch_and_parse_spotify_data(dataframe, token, client_id, client_secret):
         
         # create clean song data with chart_week
         clean_song_data = {
-            'chart_week': row['chart_week'],
+            'year': row['year'],
             'song_name': data['name'],
             'artist_name': data['album']['artists'][0]['name'],
             'spotify_url': data['external_urls']['spotify'],
@@ -112,62 +112,52 @@ def show_spotify_components(song1, song2, song3, artist1, artist2, artist3, url1
     st.write("") 
     
     
-def filter_spotify_by_year(start_year, end_year, clean_chart_positions):
+def filter_spotify_by_year(start_year, end_year, top_list):
     
-    top_list = clean_chart_positions[clean_chart_positions['list_position'] == 1]
-
     # convert chart_week to datetime
-    top_list['chart_week'] = pd.to_datetime(top_list['chart_week'])
+    top_list['year'] = pd.to_datetime(top_list['year'])
 
     # Extract year from datetime for comparison
     filtered_top_list = top_list[
-        (top_list['chart_week'].dt.year >= int(start_year)) & 
-        (top_list['chart_week'].dt.year <= int(end_year))
+        (top_list['year'].dt.year >= int(start_year)) & 
+        (top_list['year'].dt.year <= int(end_year))
     ]
     
     # Sample 3 random unique songs
     unique_songs = filtered_top_list.groupby('track_id').first().reset_index()
     three_random_songs = unique_songs.sample(3)
     
-    #three_random_songs = filtered_top_list.sample(3)
-    
     return three_random_songs
 
-def filter_spotify_by_single_year(year, chart_positions):
-    
-    top_list = chart_positions[chart_positions['list_position'] == 1]
+def filter_spotify_by_single_year(year, top_list):
 
     # convert chart_week to datetime
-    top_list['chart_week'] = pd.to_datetime(top_list['chart_week'])
+    top_list['year'] = pd.to_datetime(top_list['year'])
 
     # extract year from datetime 
     filtered_top_list = top_list[
-        (top_list['chart_week'].dt.year == int(year))
+        (top_list['year'].dt.year == int(year))
     ]
     
     # Sample 3 random unique songs
     unique_songs = filtered_top_list.groupby('track_id').first().reset_index()
     three_random_songs = unique_songs.sample(3)
     
-    #three_random_songs = filtered_top_list.sample(3)
-    
     return three_random_songs
 
-def filter_spotify_for_comparison(year1, year2, chart_positions):
-    
-    top_list = chart_positions[chart_positions['list_position'] == 1]
+def filter_spotify_for_comparison(year1, year2, top_list):
 
     # convert chart_week to datetime
-    top_list['chart_week'] = pd.to_datetime(top_list['chart_week'])
+    top_list['year'] = pd.to_datetime(top_list['year'])
 
     # extract year1 from datetime for comparison
     year1_filtered_top_list = top_list[
-        (top_list['chart_week'].dt.year == int(year1))
+        (top_list['year'].dt.year == int(year1))
     ]
 
     # extract year1 from datetime for comparison
     year2_filtered_top_list = top_list[
-        (top_list['chart_week'].dt.year == int(year2))
+        (top_list['year'].dt.year == int(year2))
     ]
     
     # Sample 3 random unique songs

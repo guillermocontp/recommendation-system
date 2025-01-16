@@ -58,7 +58,10 @@ def merge_chart_track_features(chart_dataframe, track_dataframe):
     #merging chart_dataframe with track artist mapping
     merged_dataframe = pd.merge(chart_dataframe, track_dataframe, on='track_id', how= 'inner')
     
-    return merged_dataframe
+    # filter rows where release_date is before year (year = year that the song was featured on a chart)
+    filtered_dataframe = merged_dataframe[merged_dataframe['release_date'] < merged_dataframe['year']]
+    
+    return filtered_dataframe
 
 
 # aggregates data by year
@@ -103,20 +106,10 @@ def aggregate_track_features(dataframe):
     })
     return agg_df
 
-# getting three top rated songs from each year
-def three_random_songs(dataframe):
-    
-    # sorting by list_position 1 to get top rated songs
-    sorted_dataframe = dataframe[dataframe['list_position'] == 1]
-    
-    # grouping by year and taking 3 random entries from each year
-    random_three = (sorted_dataframe
-        .groupby(sorted_dataframe['chart_week'].dt.year)
-        .apply(lambda x: x.sample(n=min(len(x), 3)))
-        .reset_index(drop=True)
-    )
-    
-    # drop list_position
-    random_three = random_three.drop('list_position', axis=1)
-    
-    return random_three
+
+# select spotify tracks that were released before they were featured on a chart and had a list position of 1
+def select_spotify_tracks(dataframe):
+    # filter on rows where list potion is 1
+    filtered_top_songs = dataframe[dataframe['list_position'] == 1]
+
+    return filtered_top_songs
