@@ -151,3 +151,54 @@ def filter_year_data(audio_df, track_df, year1, year2, features):
     track_df_year2 = track_df[audio_df['year'] == year2]
     
     return audio_df_year1, audio_df_year2, track_df_year1, track_df_year2
+
+def three_random_tracks(track_df):
+    """
+    Get three random tracks from the track DataFrame.
+    
+    Args:
+        track_df: DataFrame with track information
+        
+    Returns:
+        tuple: (song1, song2, song3, artist1, artist2, artist3, 
+                url1, url2, url3, cover1, cover2, cover3)
+    """
+    # Get random track indices
+    random_tracks = track_df.sample(3)
+    
+    # Get track information
+    song1, song2, song3 = random_tracks['song_name'].tolist()
+    artist1, artist2, artist3 = random_tracks['artist_name'].tolist()
+    url1, url2, url3 = random_tracks['spotify_url'].tolist()
+    cover1, cover2, cover3 = random_tracks['cover_image'].tolist()
+    
+    return (song1, song2, song3, 
+            artist1, artist2, artist3,
+            url1, url2, url3,
+            cover1, cover2, cover3)
+
+
+def filter_spotify_by_year(dataframe, start_year, end_year):
+    """
+    Filter Spotify data by year range.
+    
+    Args:
+        dataframe: DataFrame with chart positions
+        start_year: int, starting year for filter
+        end_year: int, ending year for filter
+        
+    Returns:
+        DataFrame with filtered Spotify ids
+    """
+    # Convert chart_week to int
+    dataframe['chart_week'] = pd.to_numeric(dataframe['chart_week'])
+    
+    filtered_spotify_data = dataframe[
+        (dataframe['chart_week'] >= start_year) & 
+        (dataframe['chart_week'] <= end_year)
+    ]
+    
+    # get three random tracks
+    three_random_tracks = filtered_spotify_data.sample(n=3)
+    
+    return three_random_tracks

@@ -12,7 +12,7 @@ def plot_yearly_features(df):
     Returns:
         plotly figure object
     """    
-    features = ['danceability', 'energy', 'acousticness', 'instrumentalness', 'liveness', 'valence']
+    features = ['danceability', 'energy', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'speechiness']
     yearly_means = df.groupby('year')[features].mean().reset_index()
     
     fig = px.line(

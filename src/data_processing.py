@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 from requests import post, get
 import base64
 import json
-from data_loading import bigquery_authenticate, load_data, get_token
 
 
 # drop duplicates from dataframe
@@ -74,7 +73,8 @@ def aggregate_audio_features(dataframe):
         'acousticness': 'mean',
         'instrumentalness': 'mean',
         'liveness': 'mean',
-        'valence': 'mean'
+        'valence': 'mean',
+        'speechiness': 'mean'
     }).reset_index()
     
     return agg_df
@@ -120,35 +120,3 @@ def three_random_songs(dataframe):
     random_three = random_three.drop('list_position', axis=1)
     
     return random_three
-
-
-# fetching data from spotify api
-def fetch_and_parse_spotify_data(dataframe):
-    # getting access token for authentication
-    token = get_token()
-    
-    # placeholder for parsed data
-    parsed_song_data = []
-
-    # iterate over dataframe rows to get both track_id and chart_week
-    for index, row in dataframe.iterrows():
-        # constructing the URL and headers for GET request
-        url = f'https://api.spotify.com/v1/tracks/{row["track_id"]}'
-        headers = {'Authorization': 'Bearer ' + token}
-        
-        # making the GET request
-        response = get(url, headers=headers)
-        data = response.json()
-        
-        # create clean song data with chart_week
-        clean_song_data = {
-            'chart_week': row['chart_week'],
-            'song_name': data['name'],
-            'artist_name': data['album']['artists'][0]['name'],
-            'spotify_url': data['external_urls']['spotify'],
-            'cover_image': data['album']['images'][0]['url']
-        }
-        parsed_song_data.append(clean_song_data)
-    
-    # create DataFrame from parsed data
-    return pd.DataFrame(parsed_song_data)
