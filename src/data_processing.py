@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from requests import post, get
 import base64
 import json
-from src.load_data import bigquery_authenticate, load_data, get_token
+from data_loading import bigquery_authenticate, load_data, get_token
 
 
 # drop duplicates from dataframe

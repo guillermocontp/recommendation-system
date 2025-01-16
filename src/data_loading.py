@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 from requests import post, get
 import base64
 import json
+import pandas as pd 
+import streamlit as st
 
 # Authenticate to GCP
 from google.auth import load_credentials_from_file
@@ -64,4 +66,18 @@ def get_token(client_id, client_secret):
     token = json_results['access_token']
     
     # returning access token
-    return token    
+    return token  
+
+def load_csv_data():
+    """
+    Load preprocessed data from CSV files.
+    
+    Returns:
+        tuple: (audio_df, track_df, spotify_df)
+    """
+
+    audio_df = pd.read_csv('data/audio_data.csv')
+    track_df = pd.read_csv('data/track_data.csv')
+    spotify_df = pd.read_csv('data/spotify_data.csv')
+    
+    return audio_df, track_df, spotify_df

@@ -1,4 +1,5 @@
 import plotly.express as px
+import streamlit as st
 
 def plot_yearly_features(df):
     """
@@ -109,3 +110,39 @@ def style_chart(fig):
         font=dict(color='#FFFFFF'),
     )
     return fig
+
+def display_metrics(avg_filtered_track_df, avg_data):
+    """
+    Display metrics in three columns using Streamlit.
+    """
+    # Create columns
+    m1, m2, m3 = st.columns(3)
+    
+    # Tempo metric
+    with m1:
+        tempo_delta = round(avg_filtered_track_df['Tempo (BPM)'].mean() - avg_data['Tempo (BPM)'].mean(), 1)
+        st.metric(
+            label="Average Tempo",
+            value=f"{round(avg_filtered_track_df['Tempo (BPM)'].mean())} BPM",
+            delta=f"{tempo_delta} BPM"
+        )
+    
+    # Loudness metric
+    with m2:
+        loudness_delta = round(avg_filtered_track_df['Loudness (dB)'].mean() - avg_data['Loudness (dB)'].mean(), 1)
+        st.metric(
+            label="Average Loudness",
+            value=f"{round(avg_filtered_track_df['Loudness (dB)'].mean())} dB",
+            delta=f"{loudness_delta} dB"
+        )
+    
+    # Duration metric
+    with m3:
+        duration_delta = round(avg_filtered_track_df['Duration (min)'].mean() - avg_data['Duration (min)'].mean(), 2)
+        st.metric(
+            label="Average Duration",
+            value=f"{round(avg_filtered_track_df['Duration (min)'].mean(), 2)} min",
+            delta=f"{duration_delta} min"
+        )
+    
+    return m1, m2, m3

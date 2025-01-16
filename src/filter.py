@@ -1,4 +1,69 @@
 import pandas as pd 
+import streamlit as st
+
+def create_sidebar_filters(audio_df):
+    """
+    Create sidebar filters for year range and feature view selection.
+    
+    Args:
+        audio_df: DataFrame containing year data
+        
+    Returns:
+        tuple: (start_year, end_year, feature_view)
+    """
+    # Get available years
+    available_years = sorted(audio_df['year'].unique().tolist())
+    
+    # Create year range selectors
+    start_year = st.sidebar.selectbox(
+        "Start Year",
+        options=available_years,
+        index=0, 
+        key='start_year'
+    )
+
+    end_year = st.sidebar.selectbox(
+        "End Year",
+        options=available_years,
+        index=len(available_years)-1,
+        key='end_year'
+    )
+    
+    # Create feature view selector
+    feature_view = st.sidebar.selectbox(
+        'Select View',
+        ['All characteristics', 'Single Characteristic'],
+        key='feature_view'
+    )
+    
+    return start_year, end_year, feature_view
+
+
+def initialize_features_and_averages(track_df):
+    """
+    Initialize feature list and calculate average track data.
+    
+    Args:
+        track_df: DataFrame with track features
+        
+    Returns:
+        tuple: (features list, average data)
+    """
+    # Define features for visualization
+    features = [
+        'danceability',
+        'energy',
+        'acousticness',
+        'instrumentalness',
+        'liveness',
+        'valence'
+    ]
+    
+    # Calculate average data
+    avg_data = track_df.mean()
+    
+    return features, avg_data
+
 
 def filter_data_by_years(audio_df, track_df, start_year, end_year):
     """
@@ -62,3 +127,27 @@ def prepare_comparison_data(audio_df, year1, year2, features):
     }).melt(id_vars=['Feature'], var_name='Year', value_name='Value')
     
     return comparison_audio_df
+
+def filter_year_data(audio_df, track_df, year1, year2, features):
+    """
+    Filter and calculate means for two selected years.
+    
+    Args:
+        audio_df: DataFrame with audio features
+        track_df: DataFrame with track features
+        year1: first year to compare
+        year2: second year to compare
+        features: list of features to analyze
+    
+    Returns:
+        tuple: (audio_df_year1_mean, audio_df_year2_mean, track_df_year1, track_df_year2)
+    """
+    # Calculate means for audio features
+    audio_df_year1 = audio_df[audio_df['year'] == year1][features].mean()
+    audio_df_year2 = audio_df[audio_df['year'] == year2][features].mean()
+    
+    # Filter track data
+    track_df_year1 = track_df[audio_df['year'] == year1]
+    track_df_year2 = track_df[audio_df['year'] == year2]
+    
+    return audio_df_year1, audio_df_year2, track_df_year1, track_df_year2
