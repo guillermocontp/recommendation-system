@@ -1,8 +1,12 @@
 # importing functions for data loading and processing 
-from load_data import bigquery_authenticate, load_data
-from data_processing import drop_duplicates, convert_to_datetime, merge_chart_audio_features, aggregate_audio_features, merge_chart_track_features, aggregate_track_features
+from src.data_loading import bigquery_authenticate, load_data
+from src.data_processing import drop_duplicates, convert_to_datetime, merge_chart_audio_features, aggregate_audio_features, merge_chart_track_features, aggregate_track_features,three_random_songs
 import os 
 import pandas as pd
+from dotenv import load_dotenv
+from requests import post, get
+import base64
+import json
 
 # authenticating to bigquery
 client = bigquery_authenticate()
@@ -35,3 +39,4 @@ if not os.path.exists(folder_name):
 # saving clean files in "data"
 aggregated_audio_features.to_csv(os.path.join(folder_name, 'audio_data.csv'), index=False)
 aggregated_track_features.to_csv(os.path.join(folder_name, 'track_data.csv'), index=False)
+chart_positions_clean.to_csv(os.path.join(folder_name, 'chart_positions_clean.csv'), index=False)

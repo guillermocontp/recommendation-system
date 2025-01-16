@@ -1,3 +1,12 @@
+import os 
+import pandas as pd
+from dotenv import load_dotenv
+from requests import post, get
+import base64
+import json
+
+
+# drop duplicates from dataframe
 def drop_duplicates(dataframe):
     
     import pandas as pd
@@ -41,7 +50,7 @@ def merge_chart_audio_features(chart_dataframe, audio_features_dataframe):
     return merged_dataframe
 
 
-# merging charts  with tracks 
+# merging charts with tracks 
 def merge_chart_track_features(chart_dataframe, track_dataframe):
     
     import pandas as pd
@@ -64,7 +73,8 @@ def aggregate_audio_features(dataframe):
         'acousticness': 'mean',
         'instrumentalness': 'mean',
         'liveness': 'mean',
-        'valence': 'mean'
+        'valence': 'mean',
+        'speechiness': 'mean'
     }).reset_index()
     
     return agg_df
@@ -92,3 +102,21 @@ def aggregate_track_features(dataframe):
         'duration_ms': 'Duration (min)'
     })
     return agg_df
+
+# getting three top rated songs from each year
+def three_random_songs(dataframe):
+    
+    # sorting by list_position 1 to get top rated songs
+    sorted_dataframe = dataframe[dataframe['list_position'] == 1]
+    
+    # grouping by year and taking 3 random entries from each year
+    random_three = (sorted_dataframe
+        .groupby(sorted_dataframe['chart_week'].dt.year)
+        .apply(lambda x: x.sample(n=min(len(x), 3)))
+        .reset_index(drop=True)
+    )
+    
+    # drop list_position
+    random_three = random_three.drop('list_position', axis=1)
+    
+    return random_three

@@ -1,3 +1,8 @@
+#import pandas as pd 
+
+# Authenticate to GCP
+
+
 # authenticating to bigquery
 def bigquery_authenticate():
     # Authenticate to GCP
@@ -14,6 +19,8 @@ def bigquery_authenticate():
 )
     return client
 
+client = bigquery_authenticate()
+
 # creating a data loading function 
 def load_data(client, table): 
     # selecting table
@@ -23,3 +30,20 @@ def load_data(client, table):
     data = load_job.to_dataframe() 
     # return dataframe 
     return data
+
+
+#def load_csv_data():
+    """
+    Load preprocessed data from CSV files.
+    
+    Returns:
+        tuple: (audio_df, track_df, spotify_df)
+    """
+
+    audio_df = pd.read_csv('data/audio_data.csv')
+    track_df = pd.read_csv('data/track_data.csv')
+    spotify_df = pd.read_csv('data/spotify_data.csv')
+    
+    return audio_df, track_df, spotify_df
+
+

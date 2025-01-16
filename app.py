@@ -2,10 +2,55 @@
 import streamlit as st
 import pandas as pd 
 import plotly.express as px
+import os
+import base64
+from dotenv import load_dotenv
+from requests import post, get  
+
+from src.data_processing import (
+    convert_to_datetime,
+)
+    
+from src.visualization import (
+    plot_yearly_features,
+    plot_single_feature, 
+    plot_feature_averages,
+    plot_year_comparison,
+    style_chart,
+    display_metrics
+)
+
+from src.filter import (
+    filter_data_by_years,
+    prepare_yearly_feature_data,
+    prepare_comparison_data,
+    create_sidebar_filters,
+    initialize_features_and_averages,
+    filter_year_data, 
+    filter_spotify_by_year
+)
+
+from src.spotify_widget import (
+    get_spotify_components,
+    show_spotify_components,
+    get_token,
+    fetch_and_parse_spotify_data,
+    filter_spotify_by_year,
+    filter_spotify_by_single_year,
+    filter_spotify_for_comparison
+)
+
+# authenticating to spotify
+# execute the load_dotenv function to get API key from .env file
+load_dotenv()
+client_id = os.getenv("CLIENT_ID")
+client_secret = os.getenv("CLIENT_SECRET")
+token = get_token(client_id, client_secret)
 
 # loading pre-processed data 
 audio_df = pd.read_csv('data/audio_data.csv')
 track_df = pd.read_csv('data/track_data.csv')
+clean_chart_positions = pd.read_csv('data/chart_positions_clean.csv')
 
 # customizing the page
 st.set_page_config(
@@ -15,11 +60,8 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# defining features list for visualization
-features = ['danceability', 'energy', 'acousticness', 'instrumentalness', 'liveness', 'valence']
-
-# defining average data for track features
-avg_data = track_df.mean()
+# defining features list for visualization and average track data for track features
+features, avg_data = initialize_features_and_averages(track_df)
 
 
 # adding sidebar titel and buttons
@@ -34,78 +76,40 @@ with st.sidebar:
     )
 
 # creating two columns and setting margins
-col1, col2 = st.columns([4,1])
+col1, spacer, col2 = st.columns([3.5, 0.5, 1])
 
-# first column of page
+# column contains song characteristics visualization and description
 with col1:
     # adding header
-    st.header('Audio Features')
+    st.header('Song Characteristics')
     st.markdown("---")
     
     # visualizing average audio features year by year
     if analysis_type == 'Timeline Analysis':
-    
-    # adding feature selection option
-        feature_view = st.sidebar.selectbox(
-            'Select View',
-            ['All Features', 'Single Feature'],
-            key = 'feature_view'
-        )
+        
+        # define start, end year and feature view:
+        start_year, end_year, feature_view = create_sidebar_filters(audio_df)
+            
+        # allow users to select year range using selectbox
+        filtered_audio_df, filtered_track_df, avg_filtered_track_df = filter_data_by_years(audio_df, track_df, start_year, end_year)
         
         # if user selects all features 
-        if feature_view == 'All Features':
+        if feature_view == 'All characteristics':
             
-            st.subheader('All Song Features Over Time')
-           
+            st.subheader('All Song Characteristics Over Time')
+            
             # plotting all features
-            yearly_means = audio_df.groupby('year')[features].mean().reset_index()
-            fig = px.line(
-                yearly_means,
-                x = 'year',
-                y = features,
-                #title = 'Audio Features Trends Over Time'
-            )
-            # xet x-axis tick interval to 1 year
-            fig.update_layout(
-            xaxis=dict(dtick=1) 
-            )
-            # display visualizations 
+            fig = plot_yearly_features(filtered_audio_df)
             st.plotly_chart(fig, use_container_width=True)
             
-            
-            # creating three columns for metrics
-            m1, m2, m3 = st.columns(3)
-            
-            # showing metrics for tempo, loudness, and duration + deltas
-            with m1:
-                tempo_delta = round(avg_data['Tempo (BPM)'].mean() - avg_data['Tempo (BPM)'].mean(), 1)
-                st.metric(
-                    label="Average Tempo",
-                    value=f"{round(avg_data['Tempo (BPM)'].mean())} BPM",
-                    delta=f"{tempo_delta} BPM"
-                )
-            
-            with m2:
-                loudness_delta = round(avg_data['Loudness (dB)'].mean() - avg_data['Loudness (dB)'].mean(), 1)
-                st.metric(
-                    label="Average Loudness",
-                    value=f"{round(avg_data['Loudness (dB)'].mean())} dB",
-                    delta=f"{loudness_delta} dB"
-                )
-            
-            with m3:
-                duration_delta = round(avg_data['Duration (min)'].mean() - avg_data['Duration (min)'].mean(), 2)
-                st.metric(
-                    label="Average Duration",
-                    value=f"{round(avg_data['Duration (min)'].mean(), 2)} min",
-                    delta=f"{duration_delta} min"
-                )
+            # display track metrics
+            display_metrics(avg_filtered_track_df, avg_data)
 
         # if user selects single feature
         else:
             # adding feature type selection option
             selected_feature = st.sidebar.selectbox(
-                'Select Feature',
+                'Select Characteristics',
                 features,
                 key = 'single_feature'
             )
@@ -114,48 +118,12 @@ with col1:
             st.subheader(f'{selected_feature} Over Time')
             
             # plotting single feature
-            yearly_means = audio_df.groupby('year')[selected_feature].mean().reset_index()
-            fig = px.line(
-                yearly_means,
-                x = 'year',
-                y = selected_feature,
-                #title=f'{selected_feature.title()} Trend Over Time'
-            )
-            # xet x-axis tick interval to 1 year
-            fig.update_layout(
-            xaxis=dict(dtick=1) 
-            )
-            
-            # display visualizations 
+            fig = plot_single_feature(filtered_audio_df, selected_feature)
             st.plotly_chart(fig, use_container_width=True)
             
-            # creating three columns for metrics
-            m1, m2, m3 = st.columns(3)
-            
-            # showing metrics for tempo, loudness, and duration + deltas
-            with m1:
-                tempo_delta = round(avg_data['Tempo (BPM)'].mean() - avg_data['Tempo (BPM)'].mean(), 1)
-                st.metric(
-                    label="Average Tempo",
-                    value=f"{round(avg_data['Tempo (BPM)'].mean())} BPM",
-                    delta=f"{tempo_delta} BPM"
-                )
-            
-            with m2:
-                loudness_delta = round(avg_data['Loudness (dB)'].mean() - avg_data['Loudness (dB)'].mean(), 1)
-                st.metric(
-                    label="Average Loudness",
-                    value=f"{round(avg_data['Loudness (dB)'].mean())} dB",
-                    delta=f"{loudness_delta} dB"
-                )
-            
-            with m3:
-                duration_delta = round(avg_data['Duration (min)'].mean() - avg_data['Duration (min)'].mean(), 2)
-                st.metric(
-                    label="Average Duration",
-                    value=f"{round(avg_data['Duration (min)'].mean(), 2)} min",
-                    delta=f"{duration_delta} min"
-                )
+            # display track metrics
+            display_metrics(avg_filtered_track_df, avg_data)
+
             
     # if user selects single year analysis
     elif analysis_type == 'Single Year Analysis':
@@ -164,54 +132,20 @@ with col1:
         year = st.sidebar.selectbox('Select Year', sorted(audio_df['year'].unique(), reverse=True))
         
         # updating header 
-        st.subheader(f'Average Song Features in {year}')
+        st.subheader(f'Average Song Characteristics during {year}')
         
         # filtering data for selected year
-        filtered_audio_df = audio_df[audio_df['year'] == year]
-        melted_audio_df = filtered_audio_df[features].mean().reset_index()
-        melted_audio_df.columns = ['Feature', 'Average Value']
+        melted_audio_df = prepare_yearly_feature_data(audio_df, year, features)
         
-        fig = px.bar(
-            melted_audio_df,
-            x = 'Feature',
-            y = 'Average Value',
-            #title = f'Average Song Features in {year}',
-            template = 'plotly_white',
-        )
-        
-        # display visualizations 
+        # plot data for selected year
+        fig = plot_feature_averages(melted_audio_df)
         st.plotly_chart(fig, use_container_width=True)
-        
-         # creating three columns for metrics
-        m1, m2, m3 = st.columns(3)
         
         # getting data for selected year 
         selected_year_track_data = track_df[track_df['year'] == year]
         
-        # showing metrics for tempo, loudness, and duration + deltas
-        with m1:
-            tempo_delta = round(selected_year_track_data['Tempo (BPM)'].mean() - avg_data['Tempo (BPM)'].mean(), 1)
-            st.metric(
-                label="Average Tempo",
-                value=f"{round(selected_year_track_data['Tempo (BPM)'].mean())} BPM",
-                delta=f"{tempo_delta} BPM"
-            )
-        
-        with m2:
-            loudness_delta = round(selected_year_track_data['Loudness (dB)'].mean() - avg_data['Loudness (dB)'].mean(), 1)
-            st.metric(
-                label="Average Loudness",
-                value=f"{round(selected_year_track_data['Loudness (dB)'].mean())} dB",
-                delta=f"{loudness_delta} dB"
-            )
-        
-        with m3:
-            duration_delta = round(selected_year_track_data['Duration (min)'].mean() - avg_data['Duration (min)'].mean(), 2)
-            st.metric(
-                label="Average Duration",
-                value=f"{round(selected_year_track_data['Duration (min)'].mean(), 2)} min",
-                delta=f"{duration_delta} min"
-            )
+        # display track metrics
+        display_metrics(selected_year_track_data, avg_data)
 
     # if user selects year comparison
     else:
@@ -221,128 +155,108 @@ with col1:
         year2 = st.sidebar.selectbox('Select Second Year', sorted(audio_df['year'].unique(), reverse=True), key='year2', index=1)
         
         # updating header 
-        st.subheader(f'Average Song Feature Comparison: {year1} vs {year2}')
+        st.subheader(f'Average Song Characteristics during {year1} vs {year2}')
         
         # filtering data for each year
-        audio_df_year1 = audio_df[audio_df['year'] == year1][features].mean()
-        audio_df_year2 = audio_df[audio_df['year'] == year2][features].mean()
-        
-        # creating a DataFrame for comparison
-        comparison_audio_df = pd.DataFrame({
-            'Feature': features,
-            str(year1): audio_df_year1.values,
-            str(year2): audio_df_year2.values
-        }).melt(id_vars=['Feature'], var_name='Year', value_name='Value')
-        
-        # creating a bar chart for comparison
-        fig = px.bar(
-            comparison_audio_df,
-            x = 'Feature',
-            y = 'Value',
-            color = 'Year',
-            barmode = 'group',
-            #title = f'Average Song Feature Comparison: {year1} vs {year2}',
-            template = 'plotly_white',
+        audio_df_year1, audio_df_year2, track_df_year1, track_df_year2 = filter_year_data(
+            audio_df, track_df, year1, year2, features
         )
+       
+        comparison_audio_df = prepare_comparison_data(audio_df, year1, year2, features)
         
-        # display visualizations 
+        # showing comparison chart: 
+        fig = plot_year_comparison(comparison_audio_df)
         st.plotly_chart(fig, use_container_width=True)
-        
-        st.subheader(f'{year1}')
-        
-        # creating three columns for metrics
-        m1, m2, m3 = st.columns(3)
         
         # getting data for selected year 
         track_df_year1 = track_df[audio_df['year'] == year1]
         track_df_year2 = track_df[audio_df['year'] == year2]
-    
-        # showing year 1 metrics for tempo, loudness, and duration + deltas
-        with m1:
-            tempo_delta = round(track_df_year1['Tempo (BPM)'].mean() - avg_data['Tempo (BPM)'].mean(), 1)
-            st.metric(
-                label="Average Tempo",
-                value=f"{round(track_df_year1['Tempo (BPM)'].mean())} BPM",
-                delta=f"{tempo_delta} BPM"
-            )
         
-        with m2:
-            loudness_delta = round(track_df_year1['Loudness (dB)'].mean() - avg_data['Loudness (dB)'].mean(), 1)
-            st.metric(
-                label="Average Loudness",
-                value=f"{round(track_df_year1['Loudness (dB)'].mean())} dB",
-                delta=f"{loudness_delta} dB"
-            )
+        st.subheader(f'{year1}')
         
-        with m3:
-            duration_delta = round(track_df_year1['Duration (min)'].mean() - avg_data['Duration (min)'].mean(), 2)
-            st.metric(
-                label="Average Duration",
-                value=f"{round(track_df_year1['Duration (min)'].mean(), 2)} min",
-                delta=f"{duration_delta} min"
-            )
+        # display track metrics
+        display_metrics(track_df_year1, avg_data)
+        st.write("")
         
         st.subheader(f'{year2}')
         
-        m4, m5, m6 = st.columns(3)
+        # display track metrics
+        display_metrics(track_df_year2, avg_data)
+        st.write("")
         
-        # showing year 2 metrics for tempo, loudness, and duration + deltas
-        with m4:
-            tempo_delta = round(track_df_year2['Tempo (BPM)'].mean() - avg_data['Tempo (BPM)'].mean(), 1)
-            st.metric(
-                label="Average Tempo",
-                value=f"{round(track_df_year2['Tempo (BPM)'].mean())} BPM",
-                delta=f"{tempo_delta} BPM"
-            )
-        
-        with m5:
-            loudness_delta = round(track_df_year2['Loudness (dB)'].mean() - avg_data['Loudness (dB)'].mean(), 1)
-            st.metric(
-                label="Average Loudness",
-                value=f"{round(track_df_year2['Loudness (dB)'].mean())} dB",
-                delta=f"{loudness_delta} dB"
-            )
-        
-        with m6:
-            duration_delta = round(track_df_year2['Duration (min)'].mean() - avg_data['Duration (min)'].mean(), 2)
-            st.metric(
-                label="Average Duration",
-                value=f"{round(track_df_year2['Duration (min)'].mean(), 2)} min",
-                delta=f"{duration_delta} min"
-            )  
-
-    # customizing the chart design 
-    fig.update_layout(
-        height=600,
-        showlegend=True,
-        xaxis_title='',
-        yaxis_title='Value',
-        yaxis=dict(range=[0, 1], tickmode='linear', dtick=0.1),
-        font=dict(color='#FFFFFF'),
-    )
+        # customizing the chart design 
+        fig = style_chart(fig)
     
     # Add space and divider
+   # st.markdown("<br>", unsafe_allow_html=True)
+   # st.markdown("---")
+   # st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Song Characteristics Descriptions
     st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown('### Audio Characteristics Descriptions')
     st.markdown("---")
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    
-    # adding feature descriptions
-    st.markdown('### Audio Feature Descriptions')
+    st.write("")
     
     # description of each feature
     feature_descriptions = {
-        "danceability": "How suitable a track is for dancing based on tempo, rhythm stability, beat strength, and overall regularity.",
-        "energy": "Represents the intensity and activity level of the track.",
-        "acousticness": "A confidence measure of whether the track is acoustic.",
-        "instrumentalness": "Predicts whether a track contains no vocals.",
-        "liveness": "Detects the presence of an audience in the recording.",
-        "valence": "Describes the musical positiveness conveyed by a track."
+        "Danceability": "Danceability describes how suitable a track is for dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and overall regularity.",
+        "Energy": "Energy represents a perceptual measure of intensity and activity. Typically, energetic tracks feel fast, loud, and noisy. For example, death metal has high energy, while a Bach prelude scores low on the scale. Perceptual features contributing to this attribute include dynamic range, perceived loudness, timbre, onset rate, and general entropy.",
+        "Acousticness": "A confidence measure from 0.0 to 1.0 of whether the track is acoustic. 1.0 represents high confidence the track is acoustic.",
+        "Instrumentalness": 'Predicts whether a track contains no vocals. "Ooh" and "aah" sounds are treated as instrumental in this context. Rap or spoken word tracks are clearly "vocal". The closer the instrumentalness value is to 1.0, the greater likelihood the track contains no vocal content. Values above 0.5 are intended to represent instrumental tracks, but confidence is higher as the value approaches 1.0.',
+        "Speechiness": "Speechiness detects the presence of spoken words in a track. The more exclusively speech-like the recording (e.g. talk show, audio book, poetry), the closer to 1.0 the attribute value. Values above 0.66 describe tracks that are probably made entirely of spoken words. Values between 0.33 and 0.66 describe tracks that may contain both music and speech, either in sections or layered, including such cases as rap music. Values below 0.33 most likely represent music and other non-speech-like tracks.",
+        "Liveness": "Liveness detects the presence of an audience in the recording. Higher liveness values represent an increased probability that the track was performed live. A value above 0.8 provides strong likelihood that the track is live.",
+        "Valence": "A describes the musical positiveness conveyed by a track. Tracks with high valence sound more positive (e.g. happy, cheerful, euphoric), while tracks with low valence sound more negative (e.g. sad, depressed, angry).",
+        "Tempo": "The overall estimated tempo of a track in beats per minute (BPM). In musical terminology, tempo is the speed or pace of a given piece and derives directly from the average beat duration.",
+        "Loudness": "The overall loudness of a track in decibels (dB). Loudness values are averaged across the entire track and are useful for comparing relative loudness of tracks. Loudness is the quality of a sound that is the primary psychological correlate of physical strength (amplitude). Values typically range between -60 and 0 db.",
+        "Duration": "The duration of the track in minutes."
     }
     
-    # creating printing feature descriptions
     for feature, description in feature_descriptions.items():
         st.write(f"**{feature.title()}:** {description}")
+        st.write("")
 
-# second column of page
-#with col2:   
+# column contains Spotify widgets that lead to spotify web player
+with col2:
+    
+    st.header('Examples')
+    st.markdown("---")
+    st.write("")
+
+    # if user selects single year analysis
+    if analysis_type == 'Timeline Analysis':
+        
+        spotify_recommendations = filter_spotify_by_year(start_year, end_year, clean_chart_positions)
+        
+        # show recommendations 
+        parsed_recommendations = fetch_and_parse_spotify_data(spotify_recommendations, token, client_id, client_secret)
+        song1, song2, song3, artist1, artist2, artist3, url1, url2, url3, cover1, cover2, cover3 = get_spotify_components(parsed_recommendations)
+        show_songs = show_spotify_components(song1, song2, song3, artist1, artist2, artist3, url1, url2, url3, cover1, cover2, cover3) 
+        
+    # if user selects single year analysis
+    elif analysis_type == 'Single Year Analysis':
+        
+        spotify_recommendations =  filter_spotify_by_single_year(year, clean_chart_positions)
+        
+        # show recommendations
+        parsed_recommendations = fetch_and_parse_spotify_data(spotify_recommendations, token, client_id, client_secret)
+        song1, song2, song3, artist1, artist2, artist3, url1, url2, url3, cover1, cover2, cover3 = get_spotify_components(parsed_recommendations)
+        show_songs = show_spotify_components(song1, song2, song3, artist1, artist2, artist3, url1, url2, url3, cover1, cover2, cover3) 
+        
+    # if user selects year comparison
+    else:
+
+        year1_spotify_recommendations, year2_spotify_recommendations = filter_spotify_for_comparison(year1, year2, clean_chart_positions)
+        
+        # show year 1 recommendations
+        st.subheader(f'{year1}')
+        year1_parsed_recommendations = fetch_and_parse_spotify_data(year1_spotify_recommendations, token, client_id, client_secret)
+        song1, song2, song3, artist1, artist2, artist3, url1, url2, url3, cover1, cover2, cover3 = get_spotify_components(year1_parsed_recommendations)
+        year1_show_songs = show_spotify_components(song1, song2, song3, artist1, artist2, artist3, url1, url2, url3, cover1, cover2, cover3) 
+        
+        # show year 2 recommendations
+        st.subheader(f'{year2}')
+        year2_parsed_recommendations = fetch_and_parse_spotify_data(year2_spotify_recommendations, token, client_id, client_secret)
+        song4, song5, song6, artist4, artist5, artist6, url4, url5, url6, cover4, cover5, cover6 = get_spotify_components(year2_parsed_recommendations)
+        year1_show_songs = show_spotify_components(song4, song5, song6, artist4, artist5, artist6, url4, url5, url6, cover4, cover5, cover6) 
