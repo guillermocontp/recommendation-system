@@ -63,7 +63,6 @@ def merge_chart_track_features(chart_dataframe, track_dataframe):
     
     return filtered_dataframe
 
-
 # aggregates data by year
 def aggregate_audio_features(dataframe):
     
