@@ -92,6 +92,36 @@ def get_spotify_components(dataframe):
             artist1, artist2, artist3,
             url1, url2, url3,
             cover1, cover2, cover3)
+
+    
+def show_spotify_components_min_max(max_dataframe, min_dataframe, selected_feature):
+    cover1 = max_dataframe['cover_image'].values[0]
+    song1 = max_dataframe['song_name'].values[0]
+    artist1 = max_dataframe['artist_name'].values[0]
+    url1 = max_dataframe['spotify_url'].values[0]
+    
+    cover2 = min_dataframe['cover_image'].values[0]
+    song2 = min_dataframe['song_name'].values[0]
+    artist2 = min_dataframe['artist_name'].values[0]
+    url2 = min_dataframe['spotify_url'].values[0]
+    
+    # max song 
+    
+    st.markdown(f"**Song with highest {selected_feature}**")
+    st.write("") 
+    st.image(cover1, use_column_width=False, width=150)
+    st.markdown(f"**{song1}**<br>{artist1}", unsafe_allow_html=True)
+    st.link_button('Listen on Spotify', url1)
+    st.write("") 
+ 
+    # min song
+    st.markdown(f"**Song with lowest {selected_feature}**")
+    st.write("") 
+    st.image(cover2, use_column_width=False, width=150)
+    st.markdown(f"**{song2}**<br>{artist2}", unsafe_allow_html=True)
+    st.link_button('Listen on Spotify', url2) 
+    st.write("") 
+    
     
 def show_spotify_components(song1, song2, song3, artist1, artist2, artist3, url1, url2, url3, cover1, cover2, cover3):
     
@@ -129,6 +159,30 @@ def filter_spotify_by_year(start_year, end_year, top_list):
     
     return three_random_songs
 
+def filter_spotify_by_year_and_feature(start_year, end_year, top_list, feature):
+    
+    # convert chart_week to datetime
+    top_list['year'] = pd.to_datetime(top_list['year'])
+
+    # Extract year from datetime for comparison
+    filtered_top_list = top_list[
+        (top_list['year'].dt.year >= int(start_year)) & 
+        (top_list['year'].dt.year <= int(end_year))
+    ]
+   
+    # gets song with highest value for selected feature 
+    unique_songs = filtered_top_list.groupby('track_id').first().reset_index()
+    filter_on_feature = unique_songs.sort_values(by=feature, ascending=False)
+    max_song = filter_on_feature.head(1)
+    
+
+    # gets song with lowest value for selected feature 
+    unique_songs = filtered_top_list.groupby('track_id').first().reset_index()
+    filter_on_feature = unique_songs.sort_values(by=feature, ascending=True)
+    min_song = filter_on_feature.head(1)
+    
+    return max_song, min_song
+
 def filter_spotify_by_single_year(year, top_list):
 
     # convert chart_week to datetime
@@ -139,11 +193,32 @@ def filter_spotify_by_single_year(year, top_list):
         (top_list['year'].dt.year == int(year))
     ]
     
-    # Sample 3 random unique songs
+    # sample 3 random unique songs
     unique_songs = filtered_top_list.groupby('track_id').first().reset_index()
     three_random_songs = unique_songs.sample(3)
     
     return three_random_songs
+
+def filter_spotify_by_single_year_and_feature(year, top_list, feature):
+    # convert chart_week to datetime
+    top_list['year'] = pd.to_datetime(top_list['year'])
+
+    # extract year from datetime 
+    filtered_top_list = top_list[
+        (top_list['year'].dt.year == int(year))
+    ]
+    
+    # get unique songs
+    unique_songs = filtered_top_list.groupby('track_id').first().reset_index()
+    
+    # sort by feature to get max and min
+    filter_on_feature = unique_songs.sort_values(by=feature, ascending=False)
+    
+    # get max and min songs
+    max_song = filter_on_feature.head(1)
+    min_song = filter_on_feature.tail(1)
+    
+    return max_song, min_song
 
 def filter_spotify_for_comparison(year1, year2, top_list):
 

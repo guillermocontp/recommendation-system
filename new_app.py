@@ -7,6 +7,21 @@ import base64
 from dotenv import load_dotenv
 from requests import post, get  
 
+from src.data_loading import (
+    bigquery_authenticate,
+    load_data
+)
+
+from src.data_processing import (
+    drop_duplicates,
+    convert_to_datetime,
+    merge_chart_audio_features,
+    aggregate_audio_features,
+    merge_chart_track_features,
+    aggregate_track_features,
+    select_spotify_tracks
+)
+
 from src.data_processing import (
     convert_to_datetime,
 )
@@ -27,7 +42,8 @@ from src.filter import (
     create_sidebar_filters,
     initialize_features_and_averages,
     filter_year_data, 
-    filter_spotify_by_year
+    filter_spotify_by_year,
+    create_sidebar_filter
 )
 
 from src.spotify_widget import (
@@ -37,20 +53,11 @@ from src.spotify_widget import (
     fetch_and_parse_spotify_data,
     filter_spotify_by_year,
     filter_spotify_by_single_year,
-    filter_spotify_for_comparison
+    filter_spotify_for_comparison,
+    filter_spotify_by_year_and_feature,
+    show_spotify_components_min_max,
+    filter_spotify_by_single_year_and_feature
 )
-
-# authenticating to spotify
-# execute the load_dotenv function to get API key from .env file
-load_dotenv()
-client_id = os.getenv("CLIENT_ID")
-client_secret = os.getenv("CLIENT_SECRET")
-token = get_token(client_id, client_secret)
-
-# loading pre-processed data 
-audio_df = pd.read_csv('data/audio_data.csv')
-track_df = pd.read_csv('data/track_data.csv')
-spotify_songs = pd.read_csv('data/spotify_songs.csv')
 
 # customizing the page
 st.set_page_config(
@@ -60,9 +67,43 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+@st.cache_data   
+def load_and_cache(): 
+    client = bigquery_authenticate()  
+    
+    # loading data from bigquery
+    audio_features = load_data(client,'audio_features')
+    chart_positions = load_data(client, 'chart_positions')
+    tracks = load_data(client, 'tracks')
+
+    # cleaning data from bigquery
+    audio_features_clean = drop_duplicates(audio_features)
+    tracks_clean = drop_duplicates(tracks)
+    chart_positions_clean = convert_to_datetime(chart_positions)
+
+    # merging and cleaning tables to get all necessary field for app
+    first_merge = merge_chart_audio_features(chart_positions_clean, audio_features_clean)
+    second_merge = merge_chart_track_features(first_merge, tracks_clean)
+
+    # aggregate tables for app
+    audio_df = aggregate_audio_features(first_merge)
+    track_df = aggregate_track_features(second_merge)
+    spotify_df = select_spotify_tracks(second_merge)
+    
+    return audio_df, track_df, spotify_df
+
+
+audio_df, track_df, spotify_songs = load_and_cache()
+
+# authenticating to spotify
+# execute the load_dotenv function to get API key from .env file
+load_dotenv()
+client_id = os.getenv("CLIENT_ID")
+client_secret = os.getenv("CLIENT_SECRET")
+token = get_token(client_id, client_secret)
+
 # defining features list for visualization and average track data for track features
 features, avg_data = initialize_features_and_averages(track_df)
-
 
 # adding sidebar titel and buttons
 with st.sidebar:
@@ -126,25 +167,59 @@ with col1:
         
     # if user selects single year analysis
     elif analysis_type == 'Single Year Analysis':
-    
+        
         # creating select box for year
         year = st.sidebar.selectbox('Select Year', sorted(audio_df['year'].unique(), reverse=True))
+
+        # define start, end year and feature view:
+        feature_view = create_sidebar_filter()
         
-        # updating header 
-        st.subheader(f'Average Song Characteristics during {year}')
+        # if user selects all features 
+        if feature_view == 'All characteristics':
+    
+         #   # creating select box for year
+         #   year = st.sidebar.selectbox('Select Year', sorted(audio_df['year'].unique(), reverse=True))
+            
+            # updating header 
+            st.subheader(f'Average Song Characteristics during {year}')
+            
+            # filtering data for selected year
+            melted_audio_df = prepare_yearly_feature_data(audio_df, year, features)
+            
+            # plot data for selected year
+            fig = plot_feature_averages(melted_audio_df)
+            st.plotly_chart(fig, use_container_width=True)
+            
+            # getting data for selected year 
+            selected_year_track_data = track_df[track_df['year'] == year]
+            
+            # display track metrics
+            display_metrics(selected_year_track_data, avg_data)
         
-        # filtering data for selected year
-        melted_audio_df = prepare_yearly_feature_data(audio_df, year, features)
-        
-        # plot data for selected year
-        fig = plot_feature_averages(melted_audio_df)
-        st.plotly_chart(fig, use_container_width=True)
-        
-        # getting data for selected year 
-        selected_year_track_data = track_df[track_df['year'] == year]
-        
-        # display track metrics
-        display_metrics(selected_year_track_data, avg_data)
+        # if user selects single feature
+        else:
+            # adding feature type selection option
+            selected_feature = st.sidebar.selectbox(
+                'Select Characteristics',
+                features,
+                key = 'single_feature'
+            )
+            
+                        # updating header 
+            st.subheader(f'Average Song Characteristics during {year}')
+            
+            # filtering data for selected year
+            melted_audio_df = prepare_yearly_feature_data(audio_df, year, features)
+            
+            # plot data for selected year
+            fig = plot_feature_averages(melted_audio_df)
+            st.plotly_chart(fig, use_container_width=True)
+            
+            # getting data for selected year 
+            selected_year_track_data = track_df[track_df['year'] == year]
+            
+            # display track metrics
+            display_metrics(selected_year_track_data, avg_data)
 
     # if user selects year comparison
     else:
@@ -224,23 +299,49 @@ with col2:
     # if user selects single year analysis
     if analysis_type == 'Timeline Analysis':
         
-        spotify_recommendations = filter_spotify_by_year(start_year, end_year, spotify_songs)
+        # if user selects all features 
+        if feature_view == 'All characteristics':
         
-        # show recommendations 
-        parsed_recommendations = fetch_and_parse_spotify_data(spotify_recommendations, token, client_id, client_secret)
-        song1, song2, song3, artist1, artist2, artist3, url1, url2, url3, cover1, cover2, cover3 = get_spotify_components(parsed_recommendations)
-        show_songs = show_spotify_components(song1, song2, song3, artist1, artist2, artist3, url1, url2, url3, cover1, cover2, cover3) 
+            spotify_recommendations = filter_spotify_by_year(start_year, end_year, spotify_songs)
+            
+            # show recommendations 
+            parsed_recommendations = fetch_and_parse_spotify_data(spotify_recommendations, token, client_id, client_secret)
+            song1, song2, song3, artist1, artist2, artist3, url1, url2, url3, cover1, cover2, cover3 = get_spotify_components(parsed_recommendations)
+            show_songs = show_spotify_components(song1, song2, song3, artist1, artist2, artist3, url1, url2, url3, cover1, cover2, cover3) 
+        
+        # if user selects specific features 
+        else:
+            
+            max_song, min_song = filter_spotify_by_year_and_feature(start_year, end_year, spotify_songs, selected_feature)
+            
+            max_song_df = fetch_and_parse_spotify_data(max_song, token, client_id, client_secret)
+            min_song_df = fetch_and_parse_spotify_data(min_song, token, client_id, client_secret)
+            
+            show_spotify_components_min_max(max_song_df, min_song_df, selected_feature)
+                   
         
     # if user selects single year analysis
     elif analysis_type == 'Single Year Analysis':
         
-        spotify_recommendations =  filter_spotify_by_single_year(year, spotify_songs)
+        # if user selects all features 
+        if feature_view == 'All characteristics':
         
-        # show recommendations
-        parsed_recommendations = fetch_and_parse_spotify_data(spotify_recommendations, token, client_id, client_secret)
-        song1, song2, song3, artist1, artist2, artist3, url1, url2, url3, cover1, cover2, cover3 = get_spotify_components(parsed_recommendations)
-        show_songs = show_spotify_components(song1, song2, song3, artist1, artist2, artist3, url1, url2, url3, cover1, cover2, cover3) 
+            spotify_recommendations =  filter_spotify_by_single_year(year, spotify_songs)
+            
+            # show recommendations
+            parsed_recommendations = fetch_and_parse_spotify_data(spotify_recommendations, token, client_id, client_secret)
+            song1, song2, song3, artist1, artist2, artist3, url1, url2, url3, cover1, cover2, cover3 = get_spotify_components(parsed_recommendations)
+            show_songs = show_spotify_components(song1, song2, song3, artist1, artist2, artist3, url1, url2, url3, cover1, cover2, cover3) 
         
+        else: 
+            
+            max_song, min_song = filter_spotify_by_single_year_and_feature(year, spotify_songs, selected_feature)
+            
+            max_song_df = fetch_and_parse_spotify_data(max_song, token, client_id, client_secret)
+            min_song_df = fetch_and_parse_spotify_data(min_song, token, client_id, client_secret)
+            
+            show_spotify_components_min_max(max_song_df, min_song_df, selected_feature)
+            
     # if user selects year comparison
     else:
 

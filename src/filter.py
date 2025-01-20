@@ -38,6 +38,17 @@ def create_sidebar_filters(audio_df):
     
     return start_year, end_year, feature_view
 
+def create_sidebar_filter():
+   
+    # Create feature view selector
+    feature_view = st.sidebar.selectbox(
+        'Select View',
+        ['All characteristics', 'Single Characteristic'],
+        key='feature_view'
+    )
+    
+    return feature_view
+
 
 def initialize_features_and_averages(track_df):
     """
