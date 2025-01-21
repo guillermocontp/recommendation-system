@@ -63,8 +63,102 @@ def fetch_and_parse_spotify_data(dataframe, token, client_id, client_secret):
     
     # create DataFrame from parsed data
     return pd.DataFrame(parsed_song_data)
+
+
+# fetching artist data from spotify api
+def fetch_and_parse_spotify_artist_data(id, token, client_id, client_secret):
+    
+    # placeholder for parsed data
+    parsed_song_data = []
+    
+    # constructing the URL and headers for GET request
+    url = f'https://api.spotify.com/v1/artists/{id}'
+    headers = {'Authorization': 'Bearer ' + token}
+    
+    # making the GET request
+    response = get(url, headers=headers)
+    data = response.json()
+    
+    # get image URL safely
+    image_url = data['images'][0]['url'] if data.get('images') and len(data['images']) > 0 else None
+    
+    # create clean song data with chart_week
+    clean_song_data = {
+        'artist_name': data['name'],
+        'popularity': data['popularity'],
+        'followers': data['followers']['total'],
+        'spotify_url': data['external_urls']['spotify'],
+        'artist_image': image_url
+    }
+    parsed_song_data.append(clean_song_data)
+    
+    # create DataFrame from parsed data
+    return pd.DataFrame(parsed_song_data)
  
+# displaying artist data
+def show_spotify_artist_components(dataframe):
+    
+    # Extract values from DataFrame (taking first row since we expect single artist)
+    artist_name = dataframe['artist_name'].iloc[0]
+    artist_image = dataframe['artist_image'].iloc[0]
+    followers = dataframe['followers'].iloc[0]
+    popularity = dataframe['popularity'].iloc[0]
+    spotify_url = dataframe['spotify_url'].iloc[0]
+    
+    st.image(artist_image, use_column_width=False, width=300)
+    
+    st.write("") 
+    
+    # Display artist info
+    st.subheader(artist_name)
+    
+    # Display metrics
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric("Spotify Followers", f"{followers:,}")
+    with col2:
+        st.metric("Popularity Popularity", f"{popularity}/100")
+    
+    st.write("") 
+    st.link_button('Go to Spotify profile', spotify_url)
+    
    
+# displaying artist data
+def show_spotify_comparison_components(dataframe1, dataframe2):
+    
+    # Extract values from DataFrame (taking first row since we expect single artist)
+    artist_name1 = dataframe1['artist_name'].iloc[0]
+    artist_image1 = dataframe1['artist_image'].iloc[0]
+    followers1 = dataframe1['followers'].iloc[0]
+    popularity1 = dataframe1['popularity'].iloc[0]
+    spotify_url1 = dataframe1['spotify_url'].iloc[0]
+    
+    artist_name2 = dataframe2['artist_name'].iloc[0]
+    artist_image2 = dataframe2['artist_image'].iloc[0]
+    followers2 = dataframe2['followers'].iloc[0]
+    popularity2 = dataframe2['popularity'].iloc[0]
+    spotify_url2 = dataframe2['spotify_url'].iloc[0]
+    
+    col1, spacer, col2 = st.columns([2, 0.25, 2])
+    with col1:
+        st.image(artist_image1, use_column_width=False, width=250)
+        st.write("") 
+        st.subheader(artist_name1)
+        st.metric("Spotify Followers", f"{followers1:,}")
+        st.metric("Popularity Popularity", f"{popularity1}/100")
+        st.write("") 
+        st.link_button('Go to Spotify profile', spotify_url1)
+        
+    with col2:
+        st.image(artist_image2, use_column_width=False, width=250)
+        st.write("") 
+        st.subheader(artist_name2)
+        st.metric("Spotify Followers", f"{followers2:,}")
+        st.metric("Popularity Popularity", f"{popularity2}/100")
+        st.write("") 
+        st.link_button('Go to Spotify profile', spotify_url2)
+    
+
 def get_spotify_components(dataframe):
     """
     Load first 3 tracks' data from dataframe.

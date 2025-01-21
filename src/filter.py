@@ -31,8 +31,8 @@ def create_sidebar_filters(audio_df):
     
     # Create feature view selector
     feature_view = st.sidebar.selectbox(
-        'Select View',
-        ['All characteristics', 'Single Characteristic'],
+        'Select metric',
+        ['All metrics', 'Single metric'],
         key='feature_view'
     )
     
@@ -50,7 +50,7 @@ def create_sidebar_filter():
     return feature_view
 
 
-def initialize_features_and_averages(track_df):
+def initialize_features_and_averages(track_df, audio_df):
     """
     Initialize feature list and calculate average track data.
     
@@ -112,6 +112,32 @@ def prepare_yearly_feature_data(audio_df, year, features):
     melted_audio_df.columns = ['Feature', 'Average Value']
     
     return melted_audio_df
+
+
+def prepare_yearly_comparison_data(audio_df, year, features):
+    """
+    Prepare comparison data between a specific year and overall average.
+    
+    Args:
+        audio_df: DataFrame with audio features
+        year: specific year to compare against overall average
+        features: list of features to compare
+        
+    Returns:
+        DataFrame with Feature, Year, and Value columns comparing specific year vs overall average
+    """
+    # filtering data for specific year
+    audio_df_year = audio_df[audio_df['year'] == year][features].mean()
+    audio_df_average = audio_df[features].mean()
+    
+    # creating a DataFrame for comparison
+    comparison_audio_df = pd.DataFrame({
+        'Feature': features,
+        str(year): audio_df_year.values,
+        'Average': audio_df_average.values
+    }).melt(id_vars=['Feature'], var_name='Year', value_name='Value')
+    
+    return comparison_audio_df
 
 def prepare_comparison_data(audio_df, year1, year2, features):
     """
