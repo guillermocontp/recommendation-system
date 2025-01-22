@@ -37,7 +37,7 @@ def get_token(client_id, client_secret):
 
 # fetching data from spotify api
 def fetch_and_parse_spotify_data(dataframe, token, client_id, client_secret):
-    
+        
     # placeholder for parsed data
     parsed_song_data = []
 
@@ -63,7 +63,6 @@ def fetch_and_parse_spotify_data(dataframe, token, client_id, client_secret):
     
     # create DataFrame from parsed data
     return pd.DataFrame(parsed_song_data)
-
 
 # fetching artist data from spotify api
 def fetch_and_parse_spotify_artist_data(id, token, client_id, client_secret):
@@ -121,7 +120,7 @@ def show_spotify_artist_components(dataframe):
     
     st.write("") 
     st.link_button('Go to Spotify profile', spotify_url)
-    
+
    
 # displaying artist data
 def show_spotify_comparison_components(dataframe1, dataframe2):

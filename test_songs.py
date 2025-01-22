@@ -21,6 +21,10 @@ from src.data_processing import (
     get_trending_artists
 )
 
+from src.spotify_widget import fetch_and_parse_spotify_data, get_token, get_spotify_components, show_spotify_components
+
+from dotenv import load_dotenv
+import os
 
 # customizing the page
 st.set_page_config(
@@ -59,10 +63,18 @@ def load_and_cache():
     track_df = aggregate_track_features(second_merge)
     spotify_df = select_spotify_tracks(second_merge)
     
-    return audio_df, track_df, spotify_df, mapping, artists, artist_track_, audio_features, trending_artists
+    return audio_df, track_df, spotify_df, mapping, artists, artist_track_, audio_features, trending_artists, second_merge # remoove last var 
 
 
-audio_df, track_df, spotify_songs, mapping, artists, artist_track_, audio_features, trending_artists = load_and_cache() 
+audio_df, track_df, spotify_songs, mapping, artists, artist_track_, audio_features, trending_artists, second_merge = load_and_cache() # remove last var
+
+# loading Spotify credentials (for API) from .env file
+load_dotenv()
+client_id = os.getenv("CLIENT_ID")
+client_secret = os.getenv("CLIENT_SECRET")
+token = get_token(client_id, client_secret)
+
+
 
 # describing the dashboard
 st.header('The Dashboard')
@@ -70,26 +82,45 @@ st.markdown("---")
 st.write("")
 
 st.markdown("""
-🎵 Take a trip down memory lane with the Billboard Hot 100!
-This dashboard lets you dive into the audio profiles of chart-topping hits, year by year, and by the artists who made them.
+Take a trip down memory lane with the Billboard Hot 100! This dashboard lets you dive into the audio profiles of chart-topping hits, year by year, and by the artists who made them.
 
-📅 Yearly Profiles:
-✨ Check out how music has changed over the years by looking at each year's unique audio profile.
-🎶 Explore the energy, valence, tempo, and other audio features that show what the music was like back then.
+* **Yearly Profiles**: Check out how music has changed over the years by looking at each year's unique audio profile. Explore the energy, valence, tempo, and other audio features that show what the music was like back then.
+* **Artist Insights**: Get a deeper understanding of your favorite artists by checking out their unique audio profiles.
 
-🎤 Artist Insights:
-💡 Get a deeper understanding of your favorite artists by checking out their unique audio profiles.
-
-💖 Whether you're a music lover, a data nerd, or just curious about how the charts have changed over the years, this dashboard provides a fun and interactive way to explore what makes popular music popular.
-
-🚀 Start your journey through music history today!      
-            
+Whether you're a music lover, a data nerd, or just curious about how the charts have changed over the years, this dashboard provides a fun and interactive way to explore what makes popular music popular. So, start your journey through music history today!
 """)
 st.write("")
 st.write("")
 st.write("")
+
+
+unique_tracks_count = second_merge['track_id'].value_counts()
+top_3_songs = unique_tracks_count.head(3)
+st.write("top 3")
+st.dataframe(top_3_songs)
+
+
+# filter for top 3 tracks and drop duplicates keeping only first occurrence
+top_3_songs = unique_tracks_count.head(3)
+test = second_merge[second_merge['track_id'].isin(top_3_songs.index)].drop_duplicates(subset=['track_id'], keep='first')
+
+# fetching data and visualizing songs
+parsed_recommendations = fetch_and_parse_spotify_data(test, token, client_id, client_secret)
+song1, song2, song3, artist1, artist2, artist3, url1, url2, url3, cover1, cover2, cover3 = get_spotify_components(parsed_recommendations)
+show_songs = show_spotify_components(song1, song2, song3, artist1, artist2, artist3, url1, url2, url3, cover1, cover2, cover3) 
+
+
+
+
+# linking to socials of creators
 st.header('Created By')
 st.markdown("---")
+st.write("")
+
+
+# counting occurrence of each song in charts and inspecting
+#unique_tracks_count = chart_with_audio_features['track_id'].value_counts()
+#unique_tracks_count
 
 # name and contact info for each team member
 team = {

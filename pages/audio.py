@@ -33,13 +33,6 @@ from src.spotify_widget import (
 )
 from home import load_and_cache
 
-# configuring page and loading data 
-st.set_page_config(
-    page_title="What Makes A Hit Song",
-    page_icon=":guitar:",
-    layout="wide", 
-    initial_sidebar_state="expanded"
-)
 audio_df, track_df, spotify_songs, mapping, artists, artist_track_, audio_features, trending_artists = load_and_cache()
 
 # loading Spotify credentials (for API) from .env file

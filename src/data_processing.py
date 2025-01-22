@@ -5,7 +5,6 @@ from requests import post, get
 import base64
 import json
 
-
 # drop duplicates from dataframe
 def drop_duplicates(dataframe):
     
@@ -23,7 +22,6 @@ def drop_duplicates(dataframe):
     dataframe.reset_index(drop= True, inplace= True)
     
     return dataframe
-
 
 # convert data chart_week column to datetime object 
 def convert_to_datetime(dataframe):
@@ -48,7 +46,6 @@ def merge_chart_audio_features(chart_dataframe, audio_features_dataframe):
     merged_dataframe = merged_dataframe.rename(columns={'chart_week': 'year'})
     
     return merged_dataframe
-
 
 # merging charts with tracks 
 def merge_chart_track_features(chart_dataframe, track_dataframe):
@@ -105,14 +102,12 @@ def aggregate_track_features(dataframe):
     })
     return agg_df
 
-
 # select spotify tracks that were released before they were featured on a chart and had a list position of 1
 def select_spotify_tracks(dataframe):
     # filter on rows where list potion is 1
     filtered_top_songs = dataframe[dataframe['list_position'] == 1]
 
     return filtered_top_songs
-
 
 def merge_artist_features(tracks, mapping, artists):
 
@@ -184,7 +179,6 @@ def data_to_radar_chart(*tables):
 
 def prepare_artist_data(tracks, mapping, artists):
     
-    
     artist_track = pd.merge(mapping, tracks, how='inner', on = 'track_id')
     artist_track_ = pd.merge(artists, artist_track, how='inner', on = 'artist_id')
     
@@ -222,7 +216,6 @@ def get_trending_artists(tracks, mapping, artists, charts):
 def calculate_trend_changes(audio_df, year, features):
     trend_changes = {"feature": [], "change": []}
     
-
     for feature in features:
         avg_feature_base = audio_df[feature].mean()
         avg_feature_current = audio_df[audio_df['year'] == year][feature].mean()

@@ -49,7 +49,6 @@ def create_sidebar_filter():
     
     return feature_view
 
-
 def initialize_features_and_averages(track_df, audio_df):
     """
     Initialize feature list and calculate average track data.
@@ -74,7 +73,6 @@ def initialize_features_and_averages(track_df, audio_df):
     avg_data = track_df.mean()
     
     return features, avg_data
-
 
 def filter_data_by_years(audio_df, track_df, start_year, end_year):
     """
@@ -112,7 +110,6 @@ def prepare_yearly_feature_data(audio_df, year, features):
     melted_audio_df.columns = ['Feature', 'Average Value']
     
     return melted_audio_df
-
 
 def prepare_yearly_comparison_data(audio_df, year, features):
     """
