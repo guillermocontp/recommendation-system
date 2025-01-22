@@ -185,7 +185,6 @@ def get_spotify_components(dataframe):
             artist1, artist2, artist3,
             url1, url2, url3,
             cover1, cover2, cover3)
-
     
 def show_spotify_components_min_max(max_dataframe, min_dataframe, selected_feature):
     cover1 = max_dataframe['cover_image'].values[0]
@@ -233,7 +232,6 @@ def show_spotify_components(song1, song2, song3, artist1, artist2, artist3, url1
     st.markdown(f"**{song3}**<br>{artist3}", unsafe_allow_html=True)
     st.link_button('Listen on Spotify', url3)  
     st.write("") 
-    
     
 def filter_spotify_by_year(start_year, end_year, top_list):
     

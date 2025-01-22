@@ -38,6 +38,36 @@ def create_sidebar_filters(audio_df):
     
     return start_year, end_year, feature_view
 
+def create_year_sidebar_filters(audio_df):
+    """
+    Create sidebar filters for year range and feature view selection.
+    
+    Args:
+        audio_df: DataFrame containing year data
+        
+    Returns:
+        tuple: (start_year, end_year, feature_view)
+    """
+    # Get available years
+    available_years = sorted(audio_df['year'].unique().tolist())
+    
+    # Create year range selectors
+    start_year = st.sidebar.selectbox(
+        "Start Year",
+        options=available_years,
+        index=0, 
+        key='start_year'
+    )
+
+    end_year = st.sidebar.selectbox(
+        "End Year",
+        options=available_years,
+        index=len(available_years)-1,
+        key='end_year'
+    )
+    
+    return start_year, end_year
+
 def create_sidebar_filter():
    
     # Create feature view selector
@@ -92,6 +122,30 @@ def filter_data_by_years(audio_df, track_df, start_year, end_year):
     avg_filtered_track_df = filtered_track_df.mean()
     
     return filtered_audio_df, filtered_track_df, avg_filtered_track_df
+
+def filter_artist_by_years(trending_artists, start_year, end_year):
+    """
+    Filter audio and track dataframes by year range and calculate track averages.
+    
+    Args:
+        audio_df: DataFrame with audio features
+        track_df: DataFrame with track features
+        start_year: int, starting year for filter
+        end_year: int, ending year for filter
+    
+    Returns:
+        tuple: (filtered_audio_df, filtered_track_df, avg_filtered_track_df)
+    """
+    # convert chart_week to datetime
+    trending_artists['chart_week'] = pd.to_datetime(trending_artists['chart_week'])
+    
+    # Filter using datetime year
+    filtered_trending_artists = trending_artists[
+        (trending_artists['chart_week'].dt.year >= start_year) & 
+        (trending_artists['chart_week'].dt.year <= end_year)
+    ]
+    
+    return filtered_trending_artists
 
 def prepare_yearly_feature_data(audio_df, year, features):
     """

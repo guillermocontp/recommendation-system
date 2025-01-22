@@ -17,6 +17,11 @@ from src.spotify_widget import (
     show_spotify_artist_components,
     show_spotify_comparison_components   
 )
+
+from src.filter import (
+    create_year_sidebar_filters,
+    filter_artist_by_years
+)
 from home import load_and_cache
 
 audio_df, track_df, spotify_songs, mapping, artists, artist_track_, audio_features, trending_artists = load_and_cache()
@@ -27,6 +32,9 @@ client_id = os.getenv("CLIENT_ID")
 client_secret = os.getenv("CLIENT_SECRET")
 token = get_token(client_id, client_secret)
 
+# defining start and end year 
+#features, avg_data = initialize_features_and_averages(track_df, audio_df)
+
 # creating sidebar filters
 with st.sidebar:
     st.title("Filters")
@@ -36,7 +44,7 @@ with st.sidebar:
         'Select view:',
         ('Trending', 'Specific', 'Comparison'), key="artist_comparison"
     )
-    
+       
     # if user selects specific artist, show search field
     if artist_option == 'Specific':
     
@@ -71,13 +79,20 @@ with st.sidebar:
         ) 
 
 # defining trending artists
-list_of_trending = trending_artists.groupby(['name_x'])['explicit'].count().nlargest(10)
+#list_of_trending = trending_artists.groupby(['name_x'])['explicit'].count().nlargest(10)
 
 # creating columns
 col1, spacer, col2 = st.columns([2.5, 0.5, 2])
 
 # if user selects trending artists
 if artist_option == 'Trending':
+    
+    # create filter selectbox for year range
+    start_year, end_year = create_year_sidebar_filters(audio_df)
+    
+    # defining trending artists
+    filtered_trending_artists = filter_artist_by_years(trending_artists, start_year, end_year)
+    list_of_trending = filtered_trending_artists.groupby(['name_x'])['explicit'].count().nlargest(10)
     
     # selectbox for trending artists
     option = st.sidebar.selectbox(
