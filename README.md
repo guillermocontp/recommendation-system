@@ -1,8 +1,8 @@
-# Exploratory Analysis: What Makes a Hit Song?
+# Exploratory Analysis: What makes a song successful enough to be featured on the Billboard Hot 100? 
 
 ## Introduction
 
-This project is part of my Hyper Island Python Course Assessment. The goal of this exploratory analysis is to examine Billboard data from the last 25 years, combined with Spotify Track Audio data. By analyzing this data, we aim to uncover patterns and insights that define what makes a hit song.
+This project is part of my Hyper Island Python Course Assessment. The goal of this exploratory analysis is to determine what makes a song successful enough to be featured on the Billboard charts.
 
 ### Data sources
 

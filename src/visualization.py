@@ -1,5 +1,8 @@
 import plotly.express as px
 import streamlit as st
+import numpy as np
+import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
 def plot_yearly_features(df):
     """
@@ -88,6 +91,7 @@ def plot_year_comparison(comparison_audio_df):
         color='Year',
         barmode='group',
         template='plotly_white',
+        color_discrete_sequence=['#0068C9', '#C3E4FF']
     )
     
     return fig
@@ -146,3 +150,82 @@ def display_metrics(avg_filtered_track_df, avg_data):
         )
     
     return m1, m2, m3
+
+
+def create_radar_chart(table):
+    """
+        Takes a table with several features and plots them into a radar chart
+    """
+    song_names = table['name']
+
+    # Features to compare
+    features = ['energy', 'danceability', 'acousticness', 'mode', 'valence']
+
+    # Prepare labels and angles for the radar chart
+    labels = features
+    angles = np.linspace(0, 2 * np.pi, len(labels), endpoint=False).tolist()
+    angles += angles[:1]  # Close the circle
+
+    # Create a radar chart for both songs
+    fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
+
+    for song_name in song_names:
+        # Extract the feature values for the song
+        values = table.loc[table['name'] == song_name, features].values.flatten()
+        values = np.append(values, values[0])  # Close the radar chart
+
+        # Plot the radar chart for the song
+        ax.fill(angles, values, alpha=0.4, label=song_name)
+        ax.plot(angles, values, linewidth=2)
+
+    # Customization
+    ax.set_yticks([0.2, 0.4, 0.6, 0.8, 1.0])  # Set y-axis ticks
+    ax.set_xticks(angles[:-1])
+    ax.set_xticklabels(labels, fontsize=12)
+    ax.set_title('Feature Comparison of Songs', size=15, pad=20)
+    ax.legend(loc='upper right', bbox_to_anchor=(1.1, 1.1))
+
+
+
+    return fig
+
+def create_radar_chart_new(table):
+    """Creates radar chart comparing song features using Plotly."""
+    
+    features = ['energy', 'danceability', 'acousticness', 'mode', 'valence']
+    song_names = table['name'].unique()
+
+    fig = go.Figure()
+
+    for song_name in song_names:
+        values = table.loc[table['name'] == song_name, features].values.flatten()
+        
+        # Add trace for each song
+        fig.add_trace(go.Scatterpolar(
+            r=values,
+            theta=features,
+            fill='toself',
+            name=song_name
+        ))
+
+    # Update layout
+    fig.update_layout(
+        polar=dict(
+            radialaxis=dict(
+                visible=True,
+                range=[0, 1]
+            )
+        ),
+        showlegend=True,
+        title={
+            'text':'',  #'Feature Comparison of Songs',
+            'y':0.95,
+            'x':0.5,
+            'xanchor': 'center',
+            'yanchor': 'top'
+        },
+        width=500,
+        height=500
+    )
+
+    return fig

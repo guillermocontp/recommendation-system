@@ -5,7 +5,6 @@ from requests import post, get
 import base64
 import json
 
-
 # drop duplicates from dataframe
 def drop_duplicates(dataframe):
     
@@ -23,7 +22,6 @@ def drop_duplicates(dataframe):
     dataframe.reset_index(drop= True, inplace= True)
     
     return dataframe
-
 
 # convert data chart_week column to datetime object 
 def convert_to_datetime(dataframe):
@@ -49,7 +47,6 @@ def merge_chart_audio_features(chart_dataframe, audio_features_dataframe):
     
     return merged_dataframe
 
-
 # merging charts with tracks 
 def merge_chart_track_features(chart_dataframe, track_dataframe):
     
@@ -58,8 +55,10 @@ def merge_chart_track_features(chart_dataframe, track_dataframe):
     #merging chart_dataframe with track artist mapping
     merged_dataframe = pd.merge(chart_dataframe, track_dataframe, on='track_id', how= 'inner')
     
-    return merged_dataframe
-
+    # filter rows where release_date is before year (year = year that the song was featured on a chart)
+    filtered_dataframe = merged_dataframe[merged_dataframe['release_date'] < merged_dataframe['year']]
+    
+    return filtered_dataframe
 
 # aggregates data by year
 def aggregate_audio_features(dataframe):
@@ -103,20 +102,126 @@ def aggregate_track_features(dataframe):
     })
     return agg_df
 
-# getting three top rated songs from each year
-def three_random_songs(dataframe):
+# select spotify tracks that were released before they were featured on a chart and had a list position of 1
+def select_spotify_tracks(dataframe):
+    # filter on rows where list potion is 1
+    filtered_top_songs = dataframe[dataframe['list_position'] == 1]
+
+    return filtered_top_songs
+
+def merge_artist_features(tracks, mapping, artists):
+
+    artist_track = pd.merge(mapping, tracks, how='inner', on='track_id')
+    artist_track_ = pd.merge(artists, artist_track, how='inner', on='artist_id')
+
+    return artist_track_
+
+def process_artist_data(artist_name, artist_track_, audio_features):
+    """
+    Process data for a given artist name to calculate charts and audio features.
+
+    Args:
+        artist_name (str): Name of the artist.
+        artist_track_chart (pd.DataFrame): DataFrame with artist and track chart data.
+        chart (pd.DataFrame): DataFrame with chart data.
+        audio_features (pd.DataFrame): DataFrame with audio features.
+
+    Returns:
+        tuple: A tuple containing:
+            - artist_charts (pd.DataFrame): DataFrame with artist chart data.
+            - artist_features (pd.DataFrame): DataFrame with artist features.
+            - artist_features_mean (pd.DataFrame): DataFrame with mean features for the artist.
+    """
+
+    artist_data = artist_track_[artist_track_['name_x'] == artist_name].groupby(['track_id'])
+    artist_data = pd.DataFrame(artist_data)
+
+    artist_mapped = artist_data[0].map(lambda x: x[0])
+    artist_mapped = pd.DataFrame(artist_mapped)
+    artist_features_ = pd.merge(artist_mapped, audio_features, left_on=0, right_on='track_id', how='inner')
+    artist_features_mean = artist_features_.agg({
+        'danceability': 'mean',
+        'energy': 'mean',
+        'acousticness': 'mean',
+        'instrumentalness': 'mean',
+        'liveness': 'mean',
+        'valence': 'mean',
+        'speechiness': 'mean',
+        'key': 'mean',
+        'mode': 'mean',
+        'tempo': 'mean',
+        'time_signature': 'mean',
+    }).reset_index()
+    artist_features_mean['name'] = artist_name
+
+    return artist_features_mean
+
+def data_to_radar_chart(*tables):
+    """
+    Concatenate any number of DataFrames into a radar chart table.
+
+    Args:
+        *tables: One or more pandas DataFrames, each having 'name', 'index', and 0 as columns.
+
+    Returns:
+        pd.DataFrame: A single DataFrame created by concatenating all input tables.
+    """
+    # Convert each input table using pivot_table
+    pivoted_tables = [
+        table.pivot_table(index='name', columns='index', values=0, aggfunc='first').reset_index()
+        for table in tables
+    ]
+
+    # Concatenate all pivoted tables
+    radar_table = pd.concat(pivoted_tables, ignore_index=True)
+
+    return radar_table
+
+def prepare_artist_data(tracks, mapping, artists):
     
-    # sorting by list_position 1 to get top rated songs
-    sorted_dataframe = dataframe[dataframe['list_position'] == 1]
+    artist_track = pd.merge(mapping, tracks, how='inner', on = 'track_id')
+    artist_track_ = pd.merge(artists, artist_track, how='inner', on = 'artist_id')
     
-    # grouping by year and taking 3 random entries from each year
-    random_three = (sorted_dataframe
-        .groupby(sorted_dataframe['chart_week'].dt.year)
-        .apply(lambda x: x.sample(n=min(len(x), 3)))
-        .reset_index(drop=True)
-    )
+    return artist_track_
+
+def data_to_radar_chart(*tables):
+    """
+    Concatenate any number of DataFrames into a radar chart table.
+
+    Args:
+        *tables: One or more pandas DataFrames, each having 'name', 'index', and 0 as columns.
+
+    Returns:
+        pd.DataFrame: A single DataFrame created by concatenating all input tables.
+    """
+    # Convert each input table using pivot_table
+    pivoted_tables = [
+        table.pivot_table(index='name', columns='index', values=0, aggfunc='first').reset_index()
+        for table in tables
+    ]
     
-    # drop list_position
-    random_three = random_three.drop('list_position', axis=1)
+    # Concatenate all pivoted tables
+    radar_table = pd.concat(pivoted_tables, ignore_index=True)
     
-    return random_three
+    return radar_table
+
+def get_trending_artists(tracks, mapping, artists, charts):
+    
+    track_chart = pd.merge(tracks, charts, how='inner', on='track_id')
+    artist_track = pd.merge(mapping, track_chart, how='inner', on = 'track_id')
+    artist_track_ = pd.merge(artists, artist_track, how='inner', on = 'artist_id')
+    
+    return artist_track_
+
+def calculate_trend_changes(audio_df, year, features):
+    trend_changes = {"feature": [], "change": []}
+    
+    for feature in features:
+        avg_feature_base = audio_df[feature].mean()
+        avg_feature_current = audio_df[audio_df['year'] == year][feature].mean()
+        change =  avg_feature_base - avg_feature_current
+
+        trend_changes["feature"].append(feature)
+        trend_changes["change"].append(change)
+
+    return trend_changes
