@@ -1,0 +1,12 @@
+numpy
+pandas
+matplotlib
+streamlit
+requests
+plotly
+db-dtypes
+google-cloud-bigquery
+google-auth
+google-cloud
+python-dotenv
+scipy

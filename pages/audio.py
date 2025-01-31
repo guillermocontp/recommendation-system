@@ -2,6 +2,8 @@
 import streamlit as st
 import os
 from dotenv import load_dotenv
+from src.data_loading import audio_df, track_df, spotify_songs, mapping, artists, artist_track_, audio_features, trending_artists
+
 
 # importing necessary functions from src    
 from src.visualization import (
@@ -32,8 +34,6 @@ from src.spotify_widget import (
     show_spotify_components_min_max,
 )
 from home import load_and_cache
-
-audio_df, track_df, spotify_songs, mapping, artists, artist_track_, audio_features, trending_artists = load_and_cache()
 
 # loading Spotify credentials (for API) from .env file
 load_dotenv()

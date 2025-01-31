@@ -4,11 +4,12 @@ from dotenv import load_dotenv
 from requests import post, get
 import base64
 import json
+from src.data_loading import audio_df, track_df, spotify_songs, mapping, artists, artist_track_, audio_features, trending_artists
 
 # drop duplicates from dataframe
 def drop_duplicates(dataframe):
     
-    import pandas as pd
+    
     
     # saving duplicates to list  
     duplicates_list = dataframe.loc[dataframe.duplicated()].index 
@@ -26,7 +27,7 @@ def drop_duplicates(dataframe):
 # convert data chart_week column to datetime object 
 def convert_to_datetime(dataframe):
     
-    import pandas as pd
+    
     
     # converting chart_week column in chart_positions table from string to datetime for convenient filtering down the line 
     dataframe['chart_week'] = pd.to_datetime(dataframe['chart_week'])
@@ -36,7 +37,7 @@ def convert_to_datetime(dataframe):
 # merging charts with audio features
 def merge_chart_audio_features(chart_dataframe, audio_features_dataframe):
     
-    import pandas as pd
+    
     
     # creating chart with audio features by merging chart_positions with tracks on 'track_id'
     merged_dataframe = pd.merge(chart_dataframe, audio_features_dataframe, on='track_id', how= 'left')
@@ -50,7 +51,7 @@ def merge_chart_audio_features(chart_dataframe, audio_features_dataframe):
 # merging charts with tracks 
 def merge_chart_track_features(chart_dataframe, track_dataframe):
     
-    import pandas as pd
+    
     
     #merging chart_dataframe with track artist mapping
     merged_dataframe = pd.merge(chart_dataframe, track_dataframe, on='track_id', how= 'inner')
@@ -63,7 +64,7 @@ def merge_chart_track_features(chart_dataframe, track_dataframe):
 # aggregates data by year
 def aggregate_audio_features(dataframe):
     
-    import pandas as pd
+    
     
     # extracting year and aggregating values for each year
     agg_df = dataframe.groupby(dataframe['year'].dt.year).agg({
@@ -81,7 +82,7 @@ def aggregate_audio_features(dataframe):
 # aggregates data by year
 def aggregate_track_features(dataframe):
     
-    import pandas as pd      
+        
     
     # extracting year and aggregating values for each year
     agg_df = dataframe.groupby(dataframe['year'].dt.year).agg({
