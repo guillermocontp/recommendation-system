@@ -1,10 +1,6 @@
-import os 
+
 import pandas as pd
-from dotenv import load_dotenv
-from requests import post, get
-import base64
-import json
-from src.data_loading import audio_df, track_df, spotify_songs, mapping, artists, artist_track_, audio_features, trending_artists
+
 
 # drop duplicates from dataframe
 def drop_duplicates(dataframe):

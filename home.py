@@ -1,6 +1,6 @@
 # importing necessary libraries
 import streamlit as st
-
+from src.data_loading import load_and_cache
 # customizing the page
 st.set_page_config(
     page_title="What Makes A Hit Song",
@@ -8,7 +8,6 @@ st.set_page_config(
     layout="wide", 
     initial_sidebar_state="expanded"
 )
-
 
 
 # describing the dashboard
@@ -55,3 +54,16 @@ for (name, contact_info), col in zip(team.items(), cols):
         st.markdown(f"**{name}**")
         st.link_button('Go to linkedin profile', contact_info)
         st.write("")
+
+#Initializing the variables from load_and_cache
+if "data_loaded" not in st.session_state:  
+    variables = load_and_cache()  # Call the function once
+    keys = ["audio_df", "track_df", "spotify_df", "mapping", "artists", "artist_track_", "audio_features", "trending_artists"]
+    
+    # Store all variables in session state dynamically
+    for key, value in zip(keys, variables):
+        st.session_state[key] = value
+
+    st.session_state.data_loaded = True  # Flag to avoid reloading
+
+

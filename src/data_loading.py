@@ -75,4 +75,4 @@ def load_and_cache():
     
     return audio_df, track_df, spotify_df, mapping, artists, artist_track_, audio_features, trending_artists
 
-audio_df, track_df, spotify_songs, mapping, artists, artist_track_, audio_features, trending_artists = load_and_cache() 
+ 
