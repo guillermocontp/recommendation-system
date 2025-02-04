@@ -1,5 +1,7 @@
 
 import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
+import numpy as np
 
 
 # drop duplicates from dataframe
@@ -222,3 +224,146 @@ def calculate_trend_changes(audio_df, year, features):
         trend_changes["change"].append(change)
 
     return trend_changes
+
+def get_artist_features(artists_df, artist_track_, audio_features):
+    """
+    Process features for all artists in one operation
+    Inputs: A dataframe of artists, a dataframe of artist and its tracks, and a dataframe of audio features
+    Outputs: A dataframe of mean audio features for each artist
+    """
+    # Get all relevant tracks
+    artist_tracks = artist_track_[artist_track_['name_x'].isin(artists_df['name'])]
+    
+    # Merge with audio features
+    features = pd.merge(artist_tracks[['name_x', 'track_id']], 
+                       audio_features, 
+                       on='track_id', 
+                       how='inner')
+    
+    # Calculate means for each artist
+    feature_columns = ['danceability', 'energy', 'acousticness', 'instrumentalness',
+                      'liveness', 'valence', 'speechiness', 'key', 'mode', 
+                      'tempo', 'time_signature']
+    
+    radar_table = features.groupby('name_x')[feature_columns].mean().reset_index()
+    radar_table = radar_table.rename(columns={'name_x': 'name'})
+    
+    return radar_table
+
+def get_similar_artists(artist_name, vectors, artists_df, n=3):
+    """
+    Find n most similar artists to the input artist based on audio features.
+    
+    Args:
+        artist_name (str): Name of the artist to find similarities for
+        vectors (np.array): Normalized feature vectors
+        artists_df (pd.DataFrame): DataFrame containing artist names
+        n (int): Number of similar artists to return (default 3)
+    
+    Returns:
+        list: Top n similar artists with their similarity scores
+    """
+    try:
+        # Get artist index
+        artist_idx = artists_df[artists_df['name'] == artist_name].index[0]
+        
+        # Calculate similarity matrix
+        similarity_matrix = cosine_similarity(vectors)
+        
+        # Get similarity scores for input artist
+        artist_similarities = similarity_matrix[artist_idx]
+        
+        # Get indices of top n similar artists (excluding self)
+        similar_indices = np.argsort(-artist_similarities)[1:n+1]
+        
+        # Create list of (artist_name, similarity_score) tuples
+        similar_artists = [
+            (artists_df.iloc[idx]['name'], 
+             artist_similarities[idx]) 
+            for idx in similar_indices
+        ]
+        
+        return similar_artists
+        
+    except IndexError:
+        return f"Artist '{artist_name}' not found in database"
+    
+
+def vectorize_artist_features(artist_features):
+    
+    """
+    Vectorize artist features for similarity calculation.
+    inputs: A dataframe with the avg features of artists
+    outputs: A normalized feature vector for similarity calculation
+    """
+    features_to_normalize = artist_features[['danceability', 'energy', 'acousticness', 'instrumentalness',
+                        'liveness', 'valence', 'speechiness', 'key', 'mode', 
+                        'tempo', 'time_signature']]
+    # 1. Normalize features
+    scaler = MinMaxScaler()
+    vectors_normalized = scaler.fit_transform(features_to_normalize)
+
+    return vectors_normalized
+
+def apply_feature_weights(vectors, weights=None):
+    """
+    Apply weights to feature vectors
+    
+    Args:
+        vectors (pd.DataFrame): Feature vectors
+        weights (dict): Dictionary of feature weights, default None
+        possible features: 'danceability', 'energy', 'acousticness',
+        'instrumentalness', 'liveness', 'valence', 
+        'speechiness', 'key', 'mode', 'tempo','time_signature'
+        
+    Returns:
+        pd.DataFrame: Weighted feature vectors
+    """
+    # Define available features
+    available_features = ['danceability', 'energy', 'acousticness', 
+                         'instrumentalness', 'liveness', 'valence', 
+                         'speechiness', 'key', 'mode', 'tempo', 
+                         'time_signature']
+    
+    # Validate input vectors
+    if not all(feature in vectors.columns for feature in available_features):
+        raise ValueError("Input vectors missing required features")
+    
+    # Use default weights if none provided
+    if weights is None:
+        weights = {feature: 1.0 for feature in available_features}
+    
+    # Validate weights
+    invalid_features = [f for f in weights.keys() if f not in available_features]
+    if invalid_features:
+        raise ValueError(f"Invalid features in weights: {invalid_features}")
+    
+    # Apply weights to vectors
+    weighted_vectors = vectors.copy()
+    for feature in available_features:
+        weight = weights.get(feature, 1.0)  # default to 1.0 if not specified
+        weighted_vectors[feature] = weighted_vectors[feature] * weight
+        
+    return weighted_vectors
+
+
+def get_artist_sample(vectors, artists_df, sample_size=30):
+    """Sample random subset of artists and their vectors
+        inputs: A dataframe of artist vectors and a dataframe of artist names
+        outputs: A sample of artist vectors and names
+    """
+    # Set random seed for reproducibility
+    np.random.seed(42)
+    
+    # Get random indices
+    sample_indices = np.random.choice(
+        len(vectors), 
+        size=min(sample_size, len(vectors)), 
+        replace=False
+    )
+    
+    # Sample both datasets using same indices
+    vectors_sample = vectors.iloc[sample_indices]
+    artists_sample = artists_df.iloc[sample_indices]
+    
+    return vectors_sample, artists_sample

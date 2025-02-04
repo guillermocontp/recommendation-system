@@ -3,6 +3,8 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
+from sklearn.manifold import TSNE
+from sklearn.preprocessing import StandardScaler
 
 def plot_yearly_features(df):
     """
@@ -229,3 +231,73 @@ def create_radar_chart_new(table):
     )
 
     return fig
+
+
+def clean_artist_name(name):
+    """Clean artist name for plotting"""
+    import re
+    # Replace special characters with underscore
+    cleaned = re.sub(r'[^a-zA-Z0-9\s-]', '_', str(name))
+    return cleaned
+
+def align_datasets(vectors, artists_df):
+        """ Align datasets for visualization """
+        common_indices = vectors.index.intersection(artists_df.index)
+        vectors_aligned = vectors.loc[common_indices]
+        artists_aligned = artists_df.loc[common_indices]
+
+
+            # Reset indices
+        vectors_aligned = vectors_aligned.reset_index(drop=True)
+        artists_aligned = artists_aligned.reset_index(drop=True)
+
+        return vectors_aligned, artists_aligned
+
+
+def visualize_artist_space(vectors, artists_df, weights=None):
+    """
+    Visualize artists in 2D space with optional feature weights
+    """
+
+
+    
+    # Apply weights if provided
+    if weights is None:
+        weights = {col: 1.0 for col in vectors.columns}
+    
+    weighted_vectors = vectors.copy()
+    for col, weight in weights.items():
+        if col in weighted_vectors.columns:
+            weighted_vectors[col] = weighted_vectors[col] * weight
+    
+    # Normalize and reduce dimensionality
+    scaler = StandardScaler()
+    vectors_scaled = scaler.fit_transform(weighted_vectors)
+       # Set appropriate perplexity (should be smaller than n_samples)
+    perplexity = min(30, len(vectors) - 1)
+    tsne = TSNE(
+        n_components=2, 
+        random_state=42,
+        perplexity=perplexity,
+        n_iter=1000
+    )
+    vectors_2d = tsne.fit_transform(vectors_scaled)
+    
+    
+    # Create plot
+    plt.figure(figsize=(12, 8))
+    plt.scatter(vectors_2d[:, 0], vectors_2d[:, 1], alpha=0.6)
+    
+    # Add artist names as labels
+    for i in range(len(vectors_2d)):
+            plt.annotate(artists_df.iloc[i]['clean_name'], 
+                        (vectors_2d[i, 0], vectors_2d[i, 1]),
+                        xytext=(5, 5), 
+                        textcoords='offset points',
+                        fontsize=8)
+    
+    plt.title('Artist Similarity Space (2D Projection)')
+    plt.xlabel('t-SNE 1')
+    plt.ylabel('t-SNE 2')
+    
+    return plt

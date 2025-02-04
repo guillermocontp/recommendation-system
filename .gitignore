@@ -3,3 +3,5 @@ service_account.json
 .env
 __pycache__/
 data_backup/
+spotify_rec/
+data/
