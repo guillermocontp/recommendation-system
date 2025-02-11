@@ -73,6 +73,6 @@ def load_and_cache():
     track_df = aggregate_track_features(second_merge)
     spotify_df = select_spotify_tracks(second_merge)
     
-    return audio_df, track_df, spotify_df, mapping, artists, artist_track_, audio_features, trending_artists
+    return  tracks, audio_df, track_df, spotify_df, mapping, artists, artist_track_, audio_features, trending_artists
 
  

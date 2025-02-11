@@ -40,11 +40,8 @@ st.markdown("---")
 # name and contact info for each team member
 team = {
     "Muhammad Alshakarti": "https://www.linkedin.com/in/alshakarti",
-    "Wei Wang (Ella)": "https://www.linkedin.com/in/ella-wang-a393b0331/",
-    "Guillermo Contreras": "https://www.linkedin.com/in/guillermocontp/",
-    "Fasaam Nasrullah": "https://www.linkedin.com/in/fasaam-nasrullah-39b3a8338/",
-    "Bruno Beckman": "https://www.linkedin.com/in/bruno-beckman-3a4158273/"
-}
+    "Guillermo Contreras": "https://www.linkedin.com/in/guillermocontp/"
+          }
 
 cols = st.columns(5)
 
@@ -58,7 +55,7 @@ for (name, contact_info), col in zip(team.items(), cols):
 #Initializing the variables from load_and_cache
 if "data_loaded" not in st.session_state:  
     variables = load_and_cache()  # Call the function once
-    keys = ["audio_df", "track_df", "spotify_df", "mapping", "artists", "artist_track_", "audio_features", "trending_artists"]
+    keys = ['tracks',"audio_df", "track_df", "spotify_df", "mapping", "artists", "artist_track_", "audio_features", "trending_artists"]
     
     # Store all variables in session state dynamically
     for key, value in zip(keys, variables):

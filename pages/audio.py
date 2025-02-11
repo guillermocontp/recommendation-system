@@ -36,7 +36,7 @@ from src.spotify_widget import (
 #accessing the dfs needed for the functions
 audio_df = st.session_state.audio_df  
 track_df = st.session_state.track_df  
-spotify_songs = st.session_state.spotify_songs  
+spotify_songs = st.session_state.spotify_df
 
 
 

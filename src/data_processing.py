@@ -2,6 +2,7 @@
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
 
 
 # drop duplicates from dataframe
@@ -176,6 +177,7 @@ def data_to_radar_chart(*tables):
 
     return radar_table
 
+# THIS FUNCTION IS DUPLICATED, CHECK MERGE ARTIST FEATURES
 def prepare_artist_data(tracks, mapping, artists):
     
     artist_track = pd.merge(mapping, tracks, how='inner', on = 'track_id')

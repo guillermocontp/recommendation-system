@@ -12,3 +12,4 @@ python-dotenv
 scipy
 sklearn.preprocessing
 sklearn.manifold
+scikit-learn
