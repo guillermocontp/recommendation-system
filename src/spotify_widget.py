@@ -104,7 +104,7 @@ def show_spotify_artist_components(dataframe):
     popularity = dataframe['popularity'].iloc[0]
     spotify_url = dataframe['spotify_url'].iloc[0]
     
-    st.image(artist_image, use_column_width=False, width=300)
+    st.image(artist_image, use_column_width=False, width=100)
     
     st.write("") 
     

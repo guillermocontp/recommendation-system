@@ -327,25 +327,28 @@ def apply_feature_weights(vectors, weights=None):
                          'speechiness', 'key', 'mode', 'tempo', 
                          'time_signature']
     
-    # Validate input vectors
-    if not all(feature in vectors.columns for feature in available_features):
-        raise ValueError("Input vectors missing required features")
+    # Convert DataFrame to numpy array if needed
+    if isinstance(vectors, pd.DataFrame):
+        vectors = vectors[available_features].to_numpy()
     
     # Use default weights if none provided
     if weights is None:
-        weights = {feature: 1.0 for feature in available_features}
+        return vectors
     
     # Validate weights
     invalid_features = [f for f in weights.keys() if f not in available_features]
     if invalid_features:
         raise ValueError(f"Invalid features in weights: {invalid_features}")
     
-    # Apply weights to vectors
-    weighted_vectors = vectors.copy()
-    for feature in available_features:
-        weight = weights.get(feature, 1.0)  # default to 1.0 if not specified
-        weighted_vectors[feature] = weighted_vectors[feature] * weight
-        
+    # Create weight array in same order as features
+    weight_array = np.ones(len(available_features))
+    for i, feature in enumerate(available_features):
+        if feature in weights:
+            weight_array[i] = weights[feature]
+    
+    # Apply weights
+    weighted_vectors = vectors * weight_array
+    
     return weighted_vectors
 
 
