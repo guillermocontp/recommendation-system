@@ -88,7 +88,7 @@ with st.sidebar:
 #list_of_trending = trending_artists.groupby(['name_x'])['explicit'].count().nlargest(10)
 
 # creating columns
-col1, spacer, col2 = st.columns([2.5, 0.5, 2])
+col1,  col2 = st.columns(2)
 
 # if user selects trending artists
 if artist_option == 'Trending':
@@ -129,7 +129,7 @@ if artist_option == 'Trending':
         artist1_mean = process_artist_data(option, artist_track_, audio_features)
         data_radar = data_to_radar_chart(artist1_mean)
         fig = create_radar_chart_new(data_radar)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, theme= 'streamlit', use_container_width=True)
         
 # if user selects trending artists
 if artist_option == 'Specific':

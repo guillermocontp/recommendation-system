@@ -155,83 +155,68 @@ def display_metrics(avg_filtered_track_df, avg_data):
     return m1, m2, m3
 
 
-def create_radar_chart(table):
-    """
-        Takes a table with several features and plots them into a radar chart
-    """
-    song_names = table['name']
-
-    # Features to compare
-    features = ['energy', 'danceability', 'acousticness', 'mode', 'valence']
-
-    # Prepare labels and angles for the radar chart
-    labels = features
-    angles = np.linspace(0, 2 * np.pi, len(labels), endpoint=False).tolist()
-    angles += angles[:1]  # Close the circle
-
-    # Create a radar chart for both songs
-    fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
-
-    for song_name in song_names:
-        # Extract the feature values for the song
-        values = table.loc[table['name'] == song_name, features].values.flatten()
-        values = np.append(values, values[0])  # Close the radar chart
-
-        # Plot the radar chart for the song
-        ax.fill(angles, values, alpha=0.4, label=song_name)
-        ax.plot(angles, values, linewidth=2)
-
-    # Customization
-    ax.set_yticks([0.2, 0.4, 0.6, 0.8, 1.0])  # Set y-axis ticks
-    ax.set_xticks(angles[:-1])
-    ax.set_xticklabels(labels, fontsize=12)
-    ax.set_title('Feature Comparison of Songs', size=15, pad=20)
-    ax.legend(loc='upper right', bbox_to_anchor=(1.1, 1.1))
 
 
 
-    return fig
+
 
 def create_radar_chart_new(table):
-    """Creates radar chart comparing song features using Plotly."""
-    
-    features = ['energy', 'danceability', 'acousticness', 'mode', 'valence']
-    song_names = table['name'].unique()
+   """Creates radar chart comparing song features using Plotly.
+   """
+   features = ['energy', 'danceability', 'acousticness', 'mode', 'valence']
+   song_names = table['name'].unique()
 
-    fig = go.Figure()
+    # Define vibrant colors
+   colors = ['rgba(255, 65, 54, 0.7)',    # red
+                'rgba(86, 215, 198, 0.7)',    # turquoise
+                'rgba(255, 171, 0, 0.7)',     # yellow
+                'rgba(153, 102, 255, 0.7)',   # purple
+                'rgba(0, 204, 150, 0.7)']     # green
 
-    for song_name in song_names:
+   fig = go.Figure()
+
+   for idx, song_name in enumerate(song_names):
         values = table.loc[table['name'] == song_name, features].values.flatten()
         
-        # Add trace for each song
+        # Add trace for each song with custom colors
         fig.add_trace(go.Scatterpolar(
             r=values,
             theta=features,
             fill='toself',
-            name=song_name
+            name=song_name,
+            line=dict(color=colors[idx % len(colors)]),
+            fillcolor=colors[idx % len(colors)]
         ))
 
-    # Update layout
-    fig.update_layout(
+    # Update layout with transparent background
+   fig.update_layout(
         polar=dict(
             radialaxis=dict(
                 visible=True,
-                range=[0, 1]
-            )
+                range=[0, 1],
+                gridcolor="rgba(255, 255, 255, 0.2)",
+                linecolor="rgba(255, 255, 255, 0.2)"
+            ),
+            angularaxis=dict(
+                gridcolor="rgba(255, 255, 255, 0.2)",
+                linecolor="rgba(255, 255, 255, 0.2)"
+            ),
+            bgcolor="rgba(0, 0, 0, 0)"
         ),
         showlegend=True,
-        title={
-            'text':'',  #'Feature Comparison of Songs',
-            'y':0.95,
-            'x':0.5,
-            'xanchor': 'center',
-            'yanchor': 'top'
-        },
+        paper_bgcolor="rgba(0, 0, 0, 0)",
+        plot_bgcolor="rgba(0, 0, 0, 0)",
         width=500,
-        height=500
+        height=500,
+        legend=dict(
+            yanchor="top",
+            y=1,
+            xanchor="left",
+            x=1.2
+        )
     )
 
-    return fig
+   return fig
 
 
 def clean_artist_name(name):
@@ -269,7 +254,7 @@ def visualize_artist_space(vectors, artists_df, scores=None):
         n_components=2, 
         random_state=42,
         perplexity=perplexity,
-        n_iter=1000
+        max_iter=1000
     )
     vectors_2d = tsne.fit_transform(vectors_scaled)
     
