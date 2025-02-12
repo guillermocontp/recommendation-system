@@ -252,22 +252,26 @@ def get_artist_features(artists_df, artist_track_, audio_features):
     
     return radar_table
 
-def get_similar_artists(artist_name, vectors, artists_df, n=3):
+def get_similar_artists(artist_name, vectors, artists_df, n=30):
     """
-    Find n most similar artists to the input artist based on audio features.
+    Find n most similar artists and return their vectors for visualization
     
     Args:
         artist_name (str): Name of the artist to find similarities for
         vectors (np.array): Normalized feature vectors
         artists_df (pd.DataFrame): DataFrame containing artist names
-        n (int): Number of similar artists to return (default 3)
+        n (int): Number of similar artists to return (default 15)
     
     Returns:
-        list: Top n similar artists with their similarity scores
+        tuple: (similar_vectors, similar_artists_df, similarity_scores)
+            - similar_vectors: numpy array of feature vectors for similar artists
+            - similar_artists_df: DataFrame with names of similar artists
+            - similarity_scores: array of similarity scores
     """
     try:
-        # Get artist index
+        # Get artist index and vector
         artist_idx = artists_df[artists_df['name'] == artist_name].index[0]
+        
         
         # Calculate similarity matrix
         similarity_matrix = cosine_similarity(vectors)
@@ -275,17 +279,15 @@ def get_similar_artists(artist_name, vectors, artists_df, n=3):
         # Get similarity scores for input artist
         artist_similarities = similarity_matrix[artist_idx]
         
-        # Get indices of top n similar artists (excluding self)
-        similar_indices = np.argsort(-artist_similarities)[1:n+1]
+        # Get indices of top n similar artists (including self)
+        similar_indices = np.argsort(-artist_similarities)[:n]
         
-        # Create list of (artist_name, similarity_score) tuples
-        similar_artists = [
-            (artists_df.iloc[idx]['name'], 
-             artist_similarities[idx]) 
-            for idx in similar_indices
-        ]
+        # Get vectors and names for similar artists
+        similar_vectors = vectors[similar_indices]
+        similar_artists = artists_df.iloc[similar_indices]
+        similarity_scores = artist_similarities[similar_indices]
         
-        return similar_artists
+        return similar_vectors, similar_artists, similarity_scores
         
     except IndexError:
         return f"Artist '{artist_name}' not found in database"

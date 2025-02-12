@@ -37,6 +37,11 @@ client_id = os.getenv("CLIENT_ID")
 client_secret = os.getenv("CLIENT_SECRET")
 token = get_token(client_id, client_secret)
 
+# Initialize variables for visualization
+similar_vectors = None
+similar_artists = None
+scores = None
+
 # processing the data
 features = ['danceability', 'energy', 'acousticness', 'instrumentalness',
                 'liveness', 'valence', 'speechiness', 'key', 'mode', 
@@ -151,16 +156,22 @@ with st.container():
     st.subheader('Similar Artists')
     if selected_artist is not None:
         vectors_to_use = st.session_state.get('vectors', vectors)
-        similar_artists = get_similar_artists(selected_artist, vectors_to_use, artists)
+        similar_vectors, similar_artists, scores = get_similar_artists(selected_artist, vectors_to_use, artists)
         
         if isinstance(similar_artists, str):
             st.write(similar_artists)
+            similar_vectors = None  # Reset if error
+            similar_artists = None
+            scores = None
         else:
             # Create three columns for recommendations
             rec_cols = st.columns(3, gap="small")
             
-            for idx, (artist, score) in enumerate(similar_artists):
+             # Only loop through top 3 artists for display
+            for idx in range(3):
                 with rec_cols[idx]:
+                    artist = similar_artists.iloc[idx+1]['name']
+                    score = scores[idx+1]
                     artist_match = artist_track_[artist_track_['name_x'] == artist]   
                     artist_id = artist_match['artist_id'].values[0]
                     test_fetch = fetch_and_parse_spotify_artist_data(artist_id, token, client_id, client_secret)
@@ -177,6 +188,12 @@ with st.container():
                         st.link_button('Go to Spotify profile', test_fetch['spotify_url'].iloc[0], use_container_width=True)
                     with col2:
                         st.metric("Similarity Score", f"{score:.3f}")
-                    
 
-            
+
+# Visualize artist space
+with st.container():
+    st.subheader("Visualize Artist Space")
+    if similar_vectors is not None:
+        fig = visualize_artist_space(similar_vectors, similar_artists, scores)
+        st.plotly_chart(fig,  use_container_width=True)
+   

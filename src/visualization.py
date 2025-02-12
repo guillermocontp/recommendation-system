@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from sklearn.manifold import TSNE
 from sklearn.preprocessing import StandardScaler
+import pandas as pd
 
 def plot_yearly_features(df):
     """
@@ -254,26 +255,15 @@ def align_datasets(vectors, artists_df):
         return vectors_aligned, artists_aligned
 
 
-def visualize_artist_space(vectors, artists_df, weights=None):
+def visualize_artist_space(vectors, artists_df, scores=None):
     """
     Visualize artists in 2D space with optional feature weights
     """
 
-
-    
-    # Apply weights if provided
-    if weights is None:
-        weights = {col: 1.0 for col in vectors.columns}
-    
-    weighted_vectors = vectors.copy()
-    for col, weight in weights.items():
-        if col in weighted_vectors.columns:
-            weighted_vectors[col] = weighted_vectors[col] * weight
-    
-    # Normalize and reduce dimensionality
+        # Apply StandardScaler before t-SNE
     scaler = StandardScaler()
-    vectors_scaled = scaler.fit_transform(weighted_vectors)
-       # Set appropriate perplexity (should be smaller than n_samples)
+    vectors_scaled = scaler.fit_transform(vectors)
+
     perplexity = min(30, len(vectors) - 1)
     tsne = TSNE(
         n_components=2, 
@@ -283,21 +273,72 @@ def visualize_artist_space(vectors, artists_df, weights=None):
     )
     vectors_2d = tsne.fit_transform(vectors_scaled)
     
+    # Create DataFrame for Plotly with size based on similarity
+    plot_df = pd.DataFrame({
+        'x': vectors_2d[:, 0],
+        'y': vectors_2d[:, 1],
+        'Artist': artists_df['name'],        
+        'Similarity': [1.0 if i == 0 else float(scores[i]) for i in range(len(vectors_2d))]
+        
+    })
+
+    # Assign types based on original similarity scores
+    plot_df['Type'] = 'Similar Artist'  # default type
+    plot_df.iloc[0, plot_df.columns.get_loc('Type')] = 'Selected Artist'  # selected artist
     
-    # Create plot
-    plt.figure(figsize=(12, 8))
-    plt.scatter(vectors_2d[:, 0], vectors_2d[:, 1], alpha=0.6)
+    # Find indices of top 3 similar artists (excluding selected artist)
+    top3_indices = scores[1:].argsort()[-3:][::-1] + 1  # add 1 to skip selected artist
+    plot_df.iloc[top3_indices, plot_df.columns.get_loc('Type')] = 'Top 3 Similar'
     
-    # Add artist names as labels
-    for i in range(len(vectors_2d)):
-            plt.annotate(artists_df.iloc[i]['clean_name'], 
-                        (vectors_2d[i, 0], vectors_2d[i, 1]),
-                        xytext=(5, 5), 
-                        textcoords='offset points',
-                        fontsize=8)
+    # Size based on similarity but larger for selected and top 3
+    plot_df['Size'] = plot_df.apply(lambda x: 
+        50 if x['Type'] == 'Selected Artist'
+        else 40 if x['Type'] == 'Top 3 Similar'
+        else max(20, 30 * x['Similarity']), axis=1)
     
-    plt.title('Artist Similarity Space (2D Projection)')
-    plt.xlabel('t-SNE 1')
-    plt.ylabel('t-SNE 2')
     
-    return plt
+    # Create Plotly figure
+    fig = px.scatter(
+        plot_df,
+        x='x',
+        y='y',
+        color='Type',
+        size='Size',
+        hover_data={
+            'Artist': True,
+            'Similarity': ':.3f',
+            'x': False,
+            'y': False,
+            'Size': False
+        },
+        color_discrete_map={
+            'Selected Artist': '#ff0000',
+            'Top 3 Similar': '#00ff00',
+            'Similar Artist': '#636efa'
+        }
+    )
+    
+    # Update layout
+    fig.update_traces(
+        textposition='top center',  # Remove text labels
+        hovertemplate="<br>".join([
+            "Artist: %{customdata[0]}",
+            "Similarity: %{customdata[1]:.3f}",
+            "<extra></extra>"
+        ])
+    )
+    
+    fig.update_layout(
+        title='Artist Similarity Space',
+        xaxis_title='t-SNE 1',
+        yaxis_title='t-SNE 2',
+        showlegend=True,
+        legend=dict(
+            yanchor="auto",
+            y=0.99,
+            xanchor="right",
+            x=0.99
+        )
+    )
+    
+    return fig
