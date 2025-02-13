@@ -252,7 +252,7 @@ def get_artist_features(artists_df, artist_track_, audio_features):
     
     return radar_table
 
-def get_similar_artists(artist_name, vectors, artists_df, n=30):
+def get_similar_artists(artist_name, vectors, artists_df, n=20):
     """
     Find n most similar artists and return their vectors for visualization
     

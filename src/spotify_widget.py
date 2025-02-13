@@ -64,6 +64,51 @@ def fetch_and_parse_spotify_data(dataframe, token, client_id, client_secret):
     # create DataFrame from parsed data
     return pd.DataFrame(parsed_song_data)
 
+
+# fetching data from spotify api
+def fetch_and_parse_spotify_songs(track_ids, token, client_id, client_secret):
+    """
+    Fetch and parse track data from Spotify API
+    
+    Args:
+        track_ids: str or list of str - Spotify track ID(s)
+        token: str - Spotify API token
+        client_id: str - Spotify client ID
+        client_secret: str - Spotify client secret
+    
+    Returns:
+        pd.DataFrame with columns: song_name, artist_name, spotify_url, cover_image
+    """
+    # Convert single track_id to list
+    if isinstance(track_ids, str):
+        track_ids = [track_ids]
+    
+    # placeholder for parsed data
+    parsed_song_data = []
+
+    # iterate over track IDs
+    for track_id in track_ids:
+        # constructing the URL and headers for GET request
+        url = f'https://api.spotify.com/v1/tracks/{track_id}'
+        headers = {'Authorization': 'Bearer ' + token}
+        
+        # making the GET request
+        response = get(url, headers=headers)
+        data = response.json()
+        
+        # create clean song data
+        clean_song_data = {
+            'track_id': track_id,
+            'song_name': data['name'],
+            'artist_name': data['album']['artists'][0]['name'],
+            'spotify_url': data['external_urls']['spotify'],
+            'cover_image': data['album']['images'][0]['url']
+        }
+        parsed_song_data.append(clean_song_data)
+    
+    # create DataFrame from parsed data
+    return pd.DataFrame(parsed_song_data)
+
 # fetching artist data from spotify api
 def fetch_and_parse_spotify_artist_data(id, token, client_id, client_secret):
     

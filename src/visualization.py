@@ -240,7 +240,7 @@ def align_datasets(vectors, artists_df):
         return vectors_aligned, artists_aligned
 
 
-def visualize_artist_space(vectors, artists_df, scores=None):
+def visualize_artist_space(vectors, items_df, scores=None, item_type="artist"):
     """
     Visualize artists in 2D space with optional feature weights
     """
@@ -257,28 +257,78 @@ def visualize_artist_space(vectors, artists_df, scores=None):
         max_iter=1000
     )
     vectors_2d = tsne.fit_transform(vectors_scaled)
-    
-    # Create DataFrame for Plotly with size based on similarity
+
+        # Use dictionary for dynamic labels
+    labels = {
+        "artist": {
+            "title": "Artist Similarity Space",
+            "hover": "Artist: %{customdata[0]}",
+            "types": ["Selected Artist", "Top 3 Similar", "Similar Artist"],
+            "hover_template": ["Artist: %{customdata[0]}", "Similarity: %{customdata[1]:.3f}"],
+            "color_map": {
+                "Selected Artist": "#ff0000",
+                "Top 3 Similar": "#00ff00",
+                "Similar Artist": "#636efa"
+            },
+            "hover_data": {
+                "Artist": True,
+                "Similarity": ":.3f",
+                "x": False,
+                "y": False,
+                "Size": False
+            },
+            "default_type": "Similar Artist",
+            "selected_type": "Selected Artist",
+            "top3_type": "Top 3 Similar"
+        },
+        "song": {
+            "title": "Song Similarity Space",
+            "hover": "Song: %{customdata[0]}",
+            "types": ["Selected Song", "Top 3 Similar", "Similar Song"],
+            "hover_template": ["Song: %{customdata[0]}", "Similarity: %{customdata[1]:.3f}"],
+            "color_map": {
+                "Selected Song": "#ff0000",
+                "Top 3 Similar": "#00ff00",
+                "Similar Song": "#636efa"
+            },
+            "hover_data": {
+                "Song": True,
+                "Similarity": ":.3f",
+                "x": False,
+                "y": False,
+                "Size": False
+            },
+            "default_type": "Similar Song",
+            "selected_type": "Selected Song",
+            "top3_type": "Top 3 Similar"
+        }
+    }[item_type]
+
+
+     # Create DataFrame using dynamic labels
     plot_df = pd.DataFrame({
         'x': vectors_2d[:, 0],
         'y': vectors_2d[:, 1],
-        'Artist': artists_df['name'],        
+        'Item': items_df['name'],        
         'Similarity': [1.0 if i == 0 else float(scores[i]) for i in range(len(vectors_2d))]
-        
     })
 
+   
+
     # Assign types based on original similarity scores
-    plot_df['Type'] = 'Similar Artist'  # default type
-    plot_df.iloc[0, plot_df.columns.get_loc('Type')] = 'Selected Artist'  # selected artist
+    plot_df['Type'] = labels["default_type"]  # default type
     
+    plot_df.iloc[0, plot_df.columns.get_loc('Type')] = labels["selected_type"]
+    
+
     # Find indices of top 3 similar artists (excluding selected artist)
     top3_indices = scores[1:].argsort()[-3:][::-1] + 1  # add 1 to skip selected artist
-    plot_df.iloc[top3_indices, plot_df.columns.get_loc('Type')] = 'Top 3 Similar'
+    plot_df.iloc[top3_indices, plot_df.columns.get_loc('Type')] = labels["top3_type"]    
     
     # Size based on similarity but larger for selected and top 3
     plot_df['Size'] = plot_df.apply(lambda x: 
-        50 if x['Type'] == 'Selected Artist'
-        else 40 if x['Type'] == 'Top 3 Similar'
+        50 if x['Type'] == labels["selected_type"]
+        else 40 if x['Type'] == labels["top3_type"]  
         else max(20, 30 * x['Similarity']), axis=1)
     
     
@@ -290,31 +340,28 @@ def visualize_artist_space(vectors, artists_df, scores=None):
         color='Type',
         size='Size',
         hover_data={
-            'Artist': True,
-            'Similarity': ':.3f',
-            'x': False,
-            'y': False,
-            'Size': False
-        },
-        color_discrete_map={
-            'Selected Artist': '#ff0000',
-            'Top 3 Similar': '#00ff00',
-            'Similar Artist': '#636efa'
-        }
+        'Item': True,
+        'Similarity': ':.3f',
+        'x': False,
+        'y': False,
+        'Size': False
+    },
+        color_discrete_map=labels["color_map"]
     )
     
     # Update layout
     fig.update_traces(
         textposition='top center',  # Remove text labels
         hovertemplate="<br>".join([
-            "Artist: %{customdata[0]}",
-            "Similarity: %{customdata[1]:.3f}",
-            "<extra></extra>"
-        ])
+        f"{item_type.capitalize()}: %{{customdata[0]}}",
+        "Similarity: %{customdata[1]:.3f}",
+        "<extra></extra>"
+    ])
+
     )
     
     fig.update_layout(
-        title='Artist Similarity Space',
+        title=labels["title"],
         xaxis_title='t-SNE 1',
         yaxis_title='t-SNE 2',
         showlegend=True,
