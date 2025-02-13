@@ -164,7 +164,7 @@ def display_metrics(avg_filtered_track_df, avg_data):
 def create_radar_chart_new(table):
     """Creates radar chart comparing song features using Plotly.
     """
-    features = ['energy', 'danceability', 'acousticness', 'mode', 'valence']
+    features = ['energy', 'danceability', 'acousticness', 'mode', 'valence', 'energy']
     song_names = table['name'].unique()
 
     # Define vibrant colors with different transparencies for line and fill
