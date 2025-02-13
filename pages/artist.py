@@ -210,3 +210,4 @@ if artist_option == 'Comparison':
             data_radar = data_to_radar_chart(artist1_mean, artist2_mean)
             fig = create_radar_chart_new(data_radar)
             st.plotly_chart(fig, use_container_width=True)
+

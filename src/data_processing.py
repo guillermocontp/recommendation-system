@@ -156,6 +156,23 @@ def process_artist_data(artist_name, artist_track_, audio_features):
 
     return artist_features_mean
 
+def process_songs(song1_name,  tracks_features):
+    test = tracks_features[tracks_features['name'] == song1_name].agg({
+        'danceability': 'mean',
+        'energy': 'mean',
+        'acousticness': 'mean',
+        'instrumentalness': 'mean',
+        'liveness': 'mean',
+        'valence': 'mean',
+        'speechiness': 'mean',
+        'key': 'mean',
+        'mode': 'mean',
+        'tempo': 'mean',
+        'time_signature': 'mean',
+    }).reset_index()
+    test['name'] = song1_name
+    return test
+
 def data_to_radar_chart(*tables):
     """
     Concatenate any number of DataFrames into a radar chart table.

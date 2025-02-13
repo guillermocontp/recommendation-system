@@ -6,6 +6,7 @@ import plotly.graph_objects as go
 from sklearn.manifold import TSNE
 from sklearn.preprocessing import StandardScaler
 import pandas as pd
+import random
 
 def plot_yearly_features(df):
     """
@@ -161,35 +162,39 @@ def display_metrics(avg_filtered_track_df, avg_data):
 
 
 def create_radar_chart_new(table):
-   """Creates radar chart comparing song features using Plotly.
-   """
-   features = ['energy', 'danceability', 'acousticness', 'mode', 'valence']
-   song_names = table['name'].unique()
+    """Creates radar chart comparing song features using Plotly.
+    """
+    features = ['energy', 'danceability', 'acousticness', 'mode', 'valence']
+    song_names = table['name'].unique()
 
-    # Define vibrant colors
-   colors = ['rgba(255, 65, 54, 0.7)',    # red
-                'rgba(86, 215, 198, 0.7)',    # turquoise
-                'rgba(255, 171, 0, 0.7)',     # yellow
-                'rgba(153, 102, 255, 0.7)',   # purple
-                'rgba(0, 204, 150, 0.7)']     # green
+    # Define vibrant colors with different transparencies for line and fill
+    colors = [
+        {'line': 'rgba(255, 65, 54, 1)',   'fill': 'rgba(255, 65, 54, 0.2)'},     # red
+        {'line': 'rgba(86, 215, 198, 1)',  'fill': 'rgba(86, 215, 198, 0.2)'},    # turquoise
+        {'line': 'rgba(255, 171, 0, 1)',   'fill': 'rgba(255, 171, 0, 0.2)'},     # yellow
+        {'line': 'rgba(153, 102, 255, 1)', 'fill': 'rgba(153, 102, 255, 0.2)'},   # purple
+        {'line': 'rgba(0, 204, 150, 1)',   'fill': 'rgba(0, 204, 150, 0.2)'}      # green
+    ]
 
-   fig = go.Figure()
+    # Randomly shuffle the colors
+    random_colors = random.sample(colors, len(song_names))
+    fig = go.Figure()
 
-   for idx, song_name in enumerate(song_names):
+    for idx, song_name in enumerate(song_names):
         values = table.loc[table['name'] == song_name, features].values.flatten()
-        
+        color = random_colors[idx]
         # Add trace for each song with custom colors
         fig.add_trace(go.Scatterpolar(
             r=values,
             theta=features,
             fill='toself',
             name=song_name,
-            line=dict(color=colors[idx % len(colors)]),
-            fillcolor=colors[idx % len(colors)]
+            line=dict(color=color['line'], width=2),
+            fillcolor=color['fill']
         ))
 
     # Update layout with transparent background
-   fig.update_layout(
+    fig.update_layout(
         polar=dict(
             radialaxis=dict(
                 visible=True,
@@ -216,7 +221,7 @@ def create_radar_chart_new(table):
         )
     )
 
-   return fig
+    return fig
 
 
 def clean_artist_name(name):
