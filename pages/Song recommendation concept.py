@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 from src.data_processing import (data_to_radar_chart, 
                                  process_songs, 
-                                  
+                                    reset_weights_callback,
                                  vectorize_artist_features, 
                                  apply_feature_weights, 
                                   
@@ -48,6 +48,7 @@ weights = {}
 # processing the data
 
 vectors, songs_cleaned = vectorize_artist_features(tracks_features)
+st.session_state.original_vectors = vectors.copy()
 
 
 
@@ -65,8 +66,7 @@ with st.sidebar:
             "Search for a song",
             options=song_list,
             index=None,
-            placeholder="Type song name...",
-            key="selected_song"
+            placeholder="Type song name..."
         )
         
 
@@ -82,19 +82,7 @@ with main_col1:
         with col1:
             st.subheader("Customize Feature Weights")
         with col2:
-            if st.button("Reset Weights", use_container_width=True):
-                # Store current artist selection
-                current_song = st.session_state.selected_song
-                # Reset vectors and weights
-                st.session_state.vectors = vectors  # Reset to original vectors
-                st.session_state.weights = {}  # Clear weights
-                
-                # Clear individual weight states
-                for feature in features:
-                    if f"weight_{feature}" in st.session_state:
-                        del st.session_state[f"weight_{feature}"]
-                # Put artist back into session state
-                st.session_state.selected_song = current_song
+            if st.button("Reset Weights", use_container_width=True, on_click=reset_weights_callback):
                 st.rerun()
         
         

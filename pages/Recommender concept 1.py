@@ -10,7 +10,7 @@ from src.data_processing import (data_to_radar_chart,
                                  get_artist_features, 
                                  vectorize_artist_features, 
                                  apply_feature_weights, 
-                                 get_artist_sample, 
+                                 reset_weights_callback, 
                                  get_similar_artists
                                     )
 
@@ -56,11 +56,10 @@ weights = {}
 table = get_artist_features(artists, artist_track_, audio_features)
 
 vectors, artists_cleaned = vectorize_artist_features(table)
+# Store original vectors for reset
+st.session_state.original_vectors = vectors.copy()
 
 
-# Initialize selected_artist in session state if not present
-#if 'selected_artist' not in st.session_state:
-#    st.session_state.selected_artist = None
 
 #page layout
 #SIDEBAR: artist selection
@@ -72,8 +71,7 @@ with st.sidebar:
         "Search for an artist",
         options=artist_list,
         index=None,
-        placeholder="Type artist name...",
-        key="selected_artist"
+        placeholder="Type artist name..."
     )
 
 # Main page layout, two columns
@@ -89,19 +87,7 @@ with main_col1:
         with col1:
             st.subheader("Customize Feature Weights")
         with col2:
-            if st.button("Reset Weights", use_container_width=True):
-                # Store current artist selection
-                current_artist = st.session_state.selected_artist
-                # Reset vectors and weights
-                st.session_state.vectors = vectors  # Reset to original vectors
-                st.session_state.weights = {}  # Clear weights
-                
-                # Clear individual weight states
-                for feature in features:
-                    if f"weight_{feature}" in st.session_state:
-                        del st.session_state[f"weight_{feature}"]
-                # Put artist back into session state
-                st.session_state.selected_artist = current_artist
+            if st.button("Reset Weights", use_container_width=True, on_click=reset_weights_callback):
                 st.rerun()
         
         

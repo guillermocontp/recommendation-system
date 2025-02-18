@@ -1,9 +1,9 @@
-
+import streamlit as st
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
-
+import numpy as np
 
 # drop duplicates from dataframe
 def drop_duplicates(dataframe):
@@ -418,3 +418,16 @@ def get_artist_sample(vectors, artists_df, sample_size=30):
     artists_sample = artists_df.iloc[sample_indices]
     
     return vectors_sample, artists_sample
+
+def reset_weights_callback():
+    """Simple callback to reset all weight-related state"""
+    # Reset weights dictionary
+    st.session_state.weights = {}
+    
+    # Clear all weight-specific states
+    for key in list(st.session_state.keys()):
+        if key.startswith('weight_'):
+            del st.session_state[key]
+
+    # Reset vectors to original state (no weights applied)
+    st.session_state.vectors = st.session_state.get('original_vectors', None)
