@@ -26,10 +26,11 @@ def load_df():
     tracks = pd.read_csv('data/tracks.csv')
     mapping = pd.read_csv('data/mapping.csv')
     artists = pd.read_csv('data/artists.csv')
-    tracks_features = pd.merge(tracks, audio_features, on='track_id', how='inner')
-    artist_track_ = merge_artist_features(tracks, mapping, artists)
     
-    return  tracks_features,tracks, mapping, artists, artist_track_, audio_features
+    
+    return  tracks, mapping, artists,  audio_features
+
+
 
 def process_artist_data(artist_name, artist_track_, audio_features):
     """

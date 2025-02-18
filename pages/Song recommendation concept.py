@@ -26,7 +26,7 @@ from src.spotify_widget import (
 # bring the necessary data
 tracks = st.session_state.tracks
 audio_features = st.session_state.audio_features
-tracks_features = st.session_state.tracks_features
+tracks_features = pd.merge(tracks, audio_features, on='track_id', how='inner')
 
 # loading Spotify credentials (for API) from .env file
 load_dotenv()

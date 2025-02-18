@@ -73,12 +73,12 @@ for (name, contact_info), col in zip(contact.items(), cols):
 #Initializing the variables from load_and_cache
 if "data_loaded" not in st.session_state:  
     variables = load_df()  # Call the function once
-    keys = ['tracks_features','tracks',"mapping", "artists", "artist_track_", "audio_features"]
+    keys = ['tracks',"mapping", "artists",  "audio_features"]
     
     # Store all variables in session state dynamically
     for key, value in zip(keys, variables):
         st.session_state[key] = value
-
+    
     st.session_state.data_loaded = True  # Flag to avoid reloading
 
 

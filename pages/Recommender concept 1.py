@@ -11,7 +11,8 @@ from src.data_processing import (data_to_radar_chart,
                                  vectorize_artist_features, 
                                  apply_feature_weights, 
                                  reset_weights_callback, 
-                                 get_similar_artists
+                                 get_similar_artists,
+                                    merge_artist_features
                                     )
 
 from src.visualization import (create_radar_chart_new, 
@@ -31,7 +32,8 @@ tracks = st.session_state.tracks
 mapping = st.session_state.mapping
 artists = st.session_state.artists
 audio_features = st.session_state.audio_features
-artist_track_ = st.session_state.artist_track_
+
+artist_track_ = merge_artist_features(tracks, mapping, artists)
 
 # loading Spotify credentials (for API) from .env file
 load_dotenv()
