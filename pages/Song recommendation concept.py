@@ -47,7 +47,7 @@ weights = {}
 
 # processing the data
 
-vectors = vectorize_artist_features(tracks_features)
+vectors, songs_cleaned = vectorize_artist_features(tracks_features)
 
 
 
@@ -157,7 +157,7 @@ with st.container():
     st.subheader('Similar Songs')
     if selected_song is not None:
         vectors_to_use = st.session_state.get('vectors', vectors)
-        result = get_similar_artists(selected_song, vectors_to_use, tracks)
+        result = get_similar_artists(selected_song, vectors_to_use, songs_cleaned)
         
         if isinstance(result, str):
             st.error(result)

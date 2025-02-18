@@ -277,24 +277,35 @@ def get_similar_artists(artist_name, vectors, artists_df, n=20):
         artist_name (str): Name of the artist to find similarities for
         vectors (np.array): Normalized feature vectors
         artists_df (pd.DataFrame): DataFrame containing artist names
-        n (int): Number of similar artists to return (default 15)
+        n (int): Number of similar artists to return (default 20)
     
     Returns:
-        tuple: (similar_vectors, similar_artists_df, similarity_scores)
-            - similar_vectors: numpy array of feature vectors for similar artists
-            - similar_artists_df: DataFrame with names of similar artists
-            - similarity_scores: array of similarity scores
+        tuple or str: Either (similar_vectors, similar_artists_df, similarity_scores) or error message
     """
     try:
+        # First ensure vectors and artists_df are aligned
+        if len(vectors) != len(artists_df):
+            return f"Mismatch between vectors ({len(vectors)}) and artists ({len(artists_df)})"
+            
+        # Check if artist exists in DataFrame
+        if artist_name not in artists_df['name'].values:
+            return f"Artist '{artist_name}' not found in database"
+            
         # Get artist index and vector
         artist_idx = artists_df[artists_df['name'] == artist_name].index[0]
         
+        # Verify index is within bounds
+        if artist_idx >= len(vectors):
+            return f"Artist index {artist_idx} out of bounds for vectors length {len(vectors)}"
         
         # Calculate similarity matrix
         similarity_matrix = cosine_similarity(vectors)
         
         # Get similarity scores for input artist
         artist_similarities = similarity_matrix[artist_idx]
+        
+        # Limit n to available artists
+        n = min(n, len(vectors))
         
         # Get indices of top n similar artists (including self)
         similar_indices = np.argsort(-artist_similarities)[:n]
@@ -306,25 +317,41 @@ def get_similar_artists(artist_name, vectors, artists_df, n=20):
         
         return similar_vectors, similar_artists, similarity_scores
         
-    except IndexError:
-        return f"Artist '{artist_name}' not found in database"
+    except Exception as e:
+        return f"Error processing artist '{artist_name}': {str(e)}"
     
 
 def vectorize_artist_features(artist_features):
-    
     """
     Vectorize artist features for similarity calculation.
-    inputs: A dataframe with the avg features of artists
-    outputs: A normalized feature vector for similarity calculation
+    
+    Args:
+        artist_features (pd.DataFrame): DataFrame with artist features
+        
+    Returns:
+        tuple: (normalized vectors, cleaned DataFrame)
+            - normalized vectors: numpy array of normalized features
+            - cleaned DataFrame: DataFrame with same indices as vectors
     """
-    features_to_normalize = artist_features[['danceability', 'energy', 'acousticness', 'instrumentalness',
-                        'liveness', 'valence', 'speechiness', 'key', 'mode', 
-                        'tempo', 'time_signature']]
-    # 1. Normalize features
+    # Define features to use
+    features_to_normalize = ['danceability', 'energy', 'acousticness', 'instrumentalness',
+                           'liveness', 'valence', 'speechiness', 'key', 'mode', 
+                           'tempo', 'time_signature']
+    
+    # Check for missing values
+    missing_mask = artist_features[features_to_normalize].isna().any(axis=1)
+    if missing_mask.any():
+        print(f"Removing {missing_mask.sum()} rows with missing values")
+        artist_features = artist_features[~missing_mask].copy()
+    
+    # Normalize features
     scaler = MinMaxScaler()
-    vectors_normalized = scaler.fit_transform(features_to_normalize)
-
-    return vectors_normalized
+    vectors_normalized = scaler.fit_transform(artist_features[features_to_normalize])
+    
+    # Create clean DataFrame with same index as vectors
+    cleaned_df = artist_features.reset_index(drop=True)
+    
+    return vectors_normalized, cleaned_df
 
 def apply_feature_weights(vectors, weights=None):
     """

@@ -55,7 +55,7 @@ weights = {}
 # processing the data
 table = get_artist_features(artists, artist_track_, audio_features)
 
-vectors = vectorize_artist_features(table)
+vectors, artists_cleaned = vectorize_artist_features(table)
 
 
 # Initialize selected_artist in session state if not present
@@ -165,7 +165,7 @@ with st.container():
     st.subheader('Similar Artists')
     if selected_artist is not None:
         vectors_to_use = st.session_state.get('vectors', vectors)
-        result = get_similar_artists(selected_artist, vectors_to_use, artists)
+        result = get_similar_artists(selected_artist, vectors_to_use, artists_cleaned)
         
         if isinstance(result, str):
             st.error(result)
