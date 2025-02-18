@@ -4,4 +4,3 @@ service_account.json
 __pycache__/
 data_backup/
 spotify_rec/
-data/
