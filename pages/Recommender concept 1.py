@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 
 from src.data_processing import (data_to_radar_chart, 
-                                 merge_artist_features, 
+                                 process_artist_data, 
                                  get_artist_features, 
                                  vectorize_artist_features, 
                                  apply_feature_weights, 
@@ -205,8 +205,8 @@ with st.container():
     if selected_artist == None or second_artist == None:
         st.write("Please select an artist")
     else:
-        artist1_mean = merge_artist_features(selected_artist, artist_track_, audio_features)
-        artist2_mean = merge_artist_features(second_artist, artist_track_, audio_features)
+        artist1_mean = process_artist_data(selected_artist, artist_track_, audio_features)
+        artist2_mean = process_artist_data(second_artist, artist_track_, audio_features)
     
         data_radar = data_to_radar_chart(artist1_mean, artist2_mean)
         fig = create_radar_chart_new(data_radar)

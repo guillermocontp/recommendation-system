@@ -1,40 +1,39 @@
-# Exploratory Analysis: What makes a song successful enough to be featured on the Billboard Hot 100? 
 
 ## Introduction
 
-This project is part of my Hyper Island Python Course Assessment. The goal of this exploratory analysis is to determine what makes a song successful enough to be featured on the Billboard charts.
+This system is derived from a project done by a team for a Hyper Island class. We analyzed the features of the songs.
 
+After that I wanted to explore the recommendations systems more in depth and I thought this was a cool example. In many of those engines, you have embeddings of the items you want to recommend (like movies) and those are done by a ML model. In this case, I can use the features of the songs: ['danceability', 'energy', 'acousticness', 'instrumentalness',
+                'liveness', 'valence', 'speechiness', 'key', 'mode', 
+                'tempo', 'time_signature']
+to group the songs in a n-dimensional vector space. Then I can use similarity to give recommendations. 
+This approach is further discussed in my blog, where I also talk about the limitations and possible further steps.
+
+ 
 ### Data sources
 
 - **Billboard data**: Historical chart data from the Billboard Hot 100.
 - **Spotify data**: Artist information and audio features for tracks available on Spotify.
+- The data is from 2000 to 2024 and is only about songs that made it to the Billboard charts during that period.
 
 ### Analysis questions
 
-#### Chart structure
-- Do all charts contain 100 songs each?
-- How often is a song featured on the charts on average?
-- What is the maximum number of times a song has been featured on the charts?
+#### Songs as vectors
+- Is it possible to approximate a song as a vector?
+- How accurate can two vectors represent songs that a human will think as alike?
+- There are many features and some are more important than others, is it possible to refine this search?
 
-#### Average audio features of a hit song
-- What were the average audio features for the past 24 years?
-- What were the average audio features for 2024?
-- What were the average audio features for 2000?
-- Is there a difference in average audio features between the top 10% and the remaining listings?
 
-#### Changes in average audio features over the years
-- Are there yearly trends in the average audio features?
-- Are there seasonal trends in the average audio features?
+#### Artists as vectors
 
-#### Correlation between track features and chart placements 
-- Is there a correlation between song explicitness and chart placements?
-- Is there a correlation between album type and chart placements?
-- Is there a correlation between song duration and chart placement?
+- If you group the songs per artist, do you get an accurate representation of what an artist is?
+- With this criteria, how interesting are the recommendations, based only on numeric values?
 
-#### Correlation between artists and their chart placements
-- Is there a correlation between artists' Spotify popularity score and their chart placements?
-- Is there a correlation between artists' Spotify followers and their chart placements?
+### Genre data
+- Spotify does have genre data, but only related to artists. As an improvement this data could be added to further filter the recommendations.
 
 ### Requirements
 
-- `service_account.json` in the root directory
+- requirement.txt included
+
+### This repo is hosted in Streamlit if you only want to see it 
