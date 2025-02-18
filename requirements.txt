@@ -13,3 +13,7 @@ scipy
 sklearn.preprocessing
 sklearn.manifold
 scikit-learn
+seaborn
+sklearn.metrics.pairwise
+plotly.graph_objects
+random
