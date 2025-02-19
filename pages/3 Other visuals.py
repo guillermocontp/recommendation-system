@@ -15,6 +15,9 @@ mapping = st.session_state.mapping
 artists = st.session_state.artists
 audio_features = st.session_state.audio_features
 
+st.markdown("### <h1 style='text-align: center;'> :rainbow[Other visuals]</h1>", unsafe_allow_html=True)
+st.markdown("---")
+st.markdown("#### <h2 style='text-align: center;'>Artist Similarity Matrix</h2>", unsafe_allow_html=True)
 
 
 # Check session state first

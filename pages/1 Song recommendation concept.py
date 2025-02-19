@@ -65,7 +65,17 @@ with st.sidebar:
             index=None,
             placeholder="Type song name..."
         )
+with st.container(border=True):
+        st.markdown('### :rainbow[Song recommendations]')
         
+        st.write(" ")  
+        st.markdown("""
+                    * Select a song from the list. The system will recommend three similar songs based on audio features.
+                    * Adjust feature weights to customize the recommendations—prioritize certain aspects like danceability, energy, or tempo.
+                        * With the feature weighting option, you can adjust the importance of each attribute (e.g., giving more weight to danceability or tempo) to refine the recommendations.
+                    * Explore visualizations below to compare the selected song and recommendations in different ways, including radar charts and t-SNE projections.
+                    """)
+               
 
 # Main page layout, two columns
 main_col1, main_col2 = st.columns([1, 1])
@@ -77,7 +87,8 @@ with main_col1:
     # Add Reset button next to title
         col1, col2 = st.columns([3, 1])
         with col1:
-            st.subheader("Customize Feature Weights")
+            st.markdown('### :rainbow[Customize Feature Weights]')
+            
         with col2:
             if st.button("Reset Weights", use_container_width=True, on_click=reset_weights_callback):
                 st.rerun()
@@ -135,7 +146,7 @@ with main_col2:
        # Create two columns for title and button
         title_col, button_col = st.columns([2, 1])
         with title_col:
-            st.markdown(f'#### Selected song: {song_name}')
+            st.markdown(f'#### :rainbow[Selected song: {song_name}]')
         with button_col:
             st.link_button('Go to Spotify profile', 
                         test_fetch['spotify_url'].iloc[0], 
@@ -149,7 +160,7 @@ st.markdown("---")
 
 # Recommendations container
 with st.container():
-    st.subheader('Similar Songs')
+    st.markdown('#### :rainbow[Similar songs]')
     if selected_song is not None:
         vectors_to_use = st.session_state.get('song_vectors', vectors)
         result = get_similar_artists(selected_song, vectors_to_use, songs_cleaned)
@@ -188,19 +199,36 @@ with st.container():
                     
                     st.write("") 
 
-# Visualize artist space
+st.markdown("---")
+st.markdown("""
+            """)
+
+# Visualize song space
 with st.container():
-    st.subheader("Visualize Artist Space")
+    st.markdown('#### :rainbow[t-SNE Visualization: Understanding Song Similarity in 2D]')
+    st.markdown("""
+                * t-SNE reduces high-dimensional data into 2D while preserving local similarities, making it easier to spot clusters of similar songs. However, global distances may be distorted.
+                * Cosine similarity directly measures vector similarity in high dimensions, but it’s harder to visualize. A song may have high cosine similarity to another but appear distant in t-SNE due to how the reduction prioritizes local structure.
+                """)
+    
     if similar_vectors is not None:
         fig = visualize_artist_space(similar_vectors, similar_songs, scores,item_type='song')
         st.plotly_chart(fig,  use_container_width=True)
-
+st.markdown("---")
+st.markdown("""
+            """)
 
 # visualize artist audio profile
 with st.container():
-    st.header('Artist Comparison')
-    st.subheader('Radar chart comparison')
-    st.markdown("---")
+    
+    st.markdown('#### :rainbow[Radar chart comparison]')
+    st.markdown("""
+                * Compare the audio features of the selected song with the most similar song.
+                * A radar chart compares two songs across multiple features, showing how their individual attributes align. If their shapes are similar, the songs share similar characteristics.
+                * Cosine similarity directly measures vector similarity in high dimensions, but it’s harder to visualize. A song may have high cosine similarity to another but appear distant in t-SNE due to how the reduction prioritizes local structure.
+                """)
+    
+   
     
     # error handling if no artist is selected
     if selected_song == None or top1_song == None:

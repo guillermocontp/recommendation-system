@@ -1,39 +1,44 @@
 
 ## Introduction
 
-This system is derived from a project done by a team for a Hyper Island class. We analyzed the features of the songs.
+This project is an extension of a team-based analysis originally conducted for my course at Hyper Island, where we explored song features to gain insights into music trends.
 
-After that I wanted to explore the recommendations systems more in depth and I thought this was a cool example. In many of those engines, you have embeddings of the items you want to recommend (like movies) and those are done by a ML model. In this case, I can use the features of the songs: ['danceability', 'energy', 'acousticness', 'instrumentalness',
-                'liveness', 'valence', 'speechiness', 'key', 'mode', 
-                'tempo', 'time_signature']
-to group the songs in a n-dimensional vector space. Then I can use similarity to give recommendations. 
-This approach is further discussed in my blog, where I also talk about the limitations and possible further steps.
+After that, I wanted to dive deeper into recommendation systems and realized this would be a great example. Many modern recommendation engines rely on embeddings—numerical representations of items (like movies or songs) learned by machine learning models. In this case, I leverage Spotify’s audio features as predefined embeddings, using attributes such as:
+
+['danceability', 'energy', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'speechiness', 'key', 'mode', 'tempo', 'time_signature']
+
+By representing songs as n-dimensional vectors, I can compute similarity scores to generate recommendations. While this approach captures mathematical similarities, the question remains: Do these recommendations align with human perception of musical similarity? I explore this in my blog, where I also discuss limitations and potential improvements to the system.
 
  
 ### Data sources
 
-- **Billboard data**: Historical chart data from the Billboard Hot 100.
-- **Spotify data**: Artist information and audio features for tracks available on Spotify.
-- The data is from 2000 to 2024 and is only about songs that made it to the Billboard charts during that period.
+- **Billboard data**: Historical Billboard Hot 100 chart data.
+- **Spotify data**: Artist details and audio features for tracks available on Spotify.
+- **Timeframe**: 2000–2024, including only songs that charted on Billboard during this period.
+
 
 ### Analysis questions
 
 #### Songs as vectors
-- Is it possible to approximate a song as a vector?
-- How accurate can two vectors represent songs that a human will think as alike?
-- There are many features and some are more important than others, is it possible to refine this search?
+- Can a song be accurately represented as a numerical vector?
+- How well does cosine similarity reflect human-perceived musical similarity?
+- With many features influencing similarity, can we refine the search by prioritizing certain features?
 
 
 #### Artists as vectors
 
-- If you group the songs per artist, do you get an accurate representation of what an artist is?
-- With this criteria, how interesting are the recommendations, based only on numeric values?
+- If we aggregate song features per artist, does the resulting vector accurately represent their style?
+- Do recommendations based only on numerical similarity produce interesting and relevant results?
 
 ### Genre data
-- Spotify does have genre data, but only related to artists. As an improvement this data could be added to further filter the recommendations.
-
+- Spotify provides genre information at the artist level, but not for individual songs.
+- Adding genre-based filtering could improve recommendation quality in future iterations.
 ### Requirements
 
 - requirement.txt included
 
-### This repo is hosted in Streamlit if you only want to see it 
+### Try It Out
+This project is hosted on Streamlit, so you can explore the recommendations and visualizations without running the code locally.
+
+https://recommendation-system-spotify-data.streamlit.app/Artist_recommendation_concept
+

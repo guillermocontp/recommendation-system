@@ -72,7 +72,16 @@ with st.sidebar:
         index=None,
         placeholder="Type artist name..."
     )
-
+with st.container(border=True):
+        st.markdown('### :rainbow[Artist recommendations]')
+        
+        st.write(" ")  
+        st.markdown("""
+                    * Select an artist from the list. The system will recommend three similar artist based on the average audio features of their available songs.
+                    * Adjust feature weights to customize the recommendations—prioritize certain aspects like danceability, energy, or tempo.
+                        * With the feature weighting option, you can adjust the importance of each attribute (e.g., giving more weight to danceability or tempo) to refine the recommendations.
+                    * Explore visualizations below to compare the selected artist's avg features and recommendations in different ways, including radar charts and t-SNE projections.
+                    """)
 # Main page layout, two columns
 main_col1, main_col2 = st.columns([1, 1])
 
@@ -84,7 +93,7 @@ with main_col1:
         # Add Reset button next to title
         col1, col2 = st.columns([3, 1])
         with col1:
-            st.subheader("Customize Feature Weights")
+            st.markdown('### :rainbow[Customize Feature Weights]')
         with col2:
             if st.button("Reset Weights", use_container_width=True, on_click=reset_weights_callback):
                 st.rerun()
@@ -127,6 +136,7 @@ with main_col1:
                 st.session_state.vectors = vectors_weighted
                 # Store with artist-specific key
                 st.session_state.artist_vectors = vectors_weighted
+    
             
 
 with main_col2:
@@ -137,19 +147,26 @@ with main_col2:
         artist_match = artist_track_[artist_track_['name_x'] == selected_artist]   
         artist_id = artist_match['artist_id'].values[0]
         test_fetch = fetch_and_parse_spotify_artist_data(artist_id, token, client_id, client_secret)
-        st.image(test_fetch['artist_image'].iloc[0], use_container_width=True, width=50)
-        st.write("") 
-        # Display artist info
-        st.subheader(test_fetch['artist_name'].iloc[0])
-                        
-        st.link_button('Go to Spotify profile', test_fetch['spotify_url'].iloc[0], use_container_width=True)
+        artist_name = test_fetch['artist_name'].iloc[0]
+       # Create two columns for title and button
+        title_col, button_col = st.columns([2, 1])
+        with title_col:
+            st.markdown(f'#### :rainbow[Selected artist: {artist_name}]')
+        with button_col:
+            st.link_button('Go to Spotify profile', 
+                        test_fetch['spotify_url'].iloc[0], 
+                        use_container_width=True)
+        
+        # Image below the columns
+        st.image(test_fetch['artist_image'].iloc[0], use_container_width=True)
+        st.write("")
                     
 
 st.markdown("---")
 
 # Recommendations container
 with st.container():
-    st.subheader('Similar Artists')
+    st.markdown('#### :rainbow[Similar artists]')
     if selected_artist is not None:
         vectors_to_use = st.session_state.get('artist_vectors', vectors)
         result = get_similar_artists(selected_artist, vectors_to_use, artists_cleaned)
@@ -187,20 +204,33 @@ with st.container():
                     with col2:
                         st.metric("Similarity Score", f"{score:.4f}")
 
-
+st.markdown("---")
+st.markdown("""
+            """)
 # Visualize artist space
 with st.container():
-    st.subheader("Visualize Artist Space")
+    st.markdown('#### :rainbow[t-SNE Visualization: Understanding Song Similarity in 2D]')
+    st.markdown("""
+                * t-SNE reduces high-dimensional data into 2D while preserving local similarities, making it easier to spot clusters of similar songs. However, global distances may be distorted.
+                * Cosine similarity directly measures vector similarity in high dimensions, but it’s harder to visualize. A song may have high cosine similarity to another but appear distant in t-SNE due to how the reduction prioritizes local structure.
+                """)
     if similar_vectors is not None:
         fig = visualize_artist_space(similar_vectors, similar_artists, scores, item_type='artist')
         st.plotly_chart(fig,  use_container_width=True)
+st.markdown("---")
+st.markdown("""
+            """)
    
 
 # visualize artist audio profile
 with st.container():
-    st.header('Artist Comparison')
-    st.subheader('Radar chart comparison')
-    st.markdown("---")
+     
+    st.markdown('#### :rainbow[Radar chart comparison]')
+    st.markdown("""
+                * Compare the average audio features of the selected artist with its top match .
+                * A radar chart compares two artists across multiple features, showing how their individual attributes align. If their shapes are similar, the songs share similar characteristics.
+                * Cosine similarity directly measures vector similarity in high dimensions, but it’s harder to visualize. A song may have high cosine similarity to another but appear distant in t-SNE due to how the reduction prioritizes local structure.
+                """)
     
     # error handling if no artist is selected
     if selected_artist == None or second_artist == None:

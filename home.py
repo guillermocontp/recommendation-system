@@ -29,7 +29,7 @@ st.markdown("""
 """)
 st.write("")
 st.write("")
-st.markdown("### :green[Features used in the recommendation system(description from Spotify's API):]")
+st.markdown("#### Features description from :green[Spotify's API]:")
 
 # description of each feature
 
