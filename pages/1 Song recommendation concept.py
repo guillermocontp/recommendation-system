@@ -4,36 +4,27 @@ import matplotlib.pyplot as plt
 import os
 from dotenv import load_dotenv
 
-
 from src.data_processing import (data_to_radar_chart, 
-                                 process_artist_data, 
-                                 get_artist_features, 
+                                 process_songs, 
+                                    reset_weights_callback,
                                  vectorize_artist_features, 
                                  apply_feature_weights, 
-                                 reset_weights_callback, 
-                                 get_similar_artists,
-                                    merge_artist_features
+                                  
+                                 get_similar_artists
                                     )
 
-from src.visualization import (create_radar_chart_new, 
-                               visualize_artist_space
-)
-
-from src.spotify_widget import (fetch_and_parse_spotify_artist_data, 
-                                
-                                )
+from src.visualization import create_radar_chart_new, visualize_artist_space
 
 from src.spotify_widget import (
-    get_token
-)
+                                fetch_and_parse_spotify_songs,
+                                get_token
+                                )
+
 
 # bring the necessary data
 tracks = st.session_state.tracks
-mapping = st.session_state.mapping
-artists = st.session_state.artists
 audio_features = st.session_state.audio_features
-
-artist_track_ = merge_artist_features(tracks, mapping, artists)
+tracks_features = pd.merge(tracks, audio_features, on='track_id', how='inner')
 
 # loading Spotify credentials (for API) from .env file
 load_dotenv()
@@ -43,10 +34,8 @@ token = get_token(client_id, client_secret)
 
 # Initialize variables for visualization
 similar_vectors = None
-similar_artists = None
+similar_songs = None
 scores = None
-
-
 features = ['danceability', 'energy', 'acousticness', 'instrumentalness',
                 'liveness', 'valence', 'speechiness', 'key', 'mode', 
                 'tempo', 'time_signature']
@@ -55,10 +44,8 @@ weight_values = [0.1, 0.5, 1, 1.5, 2.0, 3.0, 5.0]
 weights = {}
 
 # processing the data
-table = get_artist_features(artists, artist_track_, audio_features)
 
-vectors, artists_cleaned = vectorize_artist_features(table)
-# Store original vectors for reset
+vectors, songs_cleaned = vectorize_artist_features(tracks_features)
 st.session_state.original_vectors = vectors.copy()
 
 
@@ -68,23 +55,27 @@ st.session_state.original_vectors = vectors.copy()
 
 
 with st.sidebar:
-    artist_list = sorted(artist_track_['name_x'].unique())
-    selected_artist = st.selectbox(
-        "Search for an artist",
-        options=artist_list,
-        index=None,
-        placeholder="Type artist name..."
-    )
+
+# First container: Feature weights
+    
+
+        song_list = sorted(tracks_features['name'].unique())
+        selected_song = st.selectbox(
+            "Search for a song",
+            options=song_list,
+            index=None,
+            placeholder="Type song name..."
+        )
+        
 
 # Main page layout, two columns
 main_col1, main_col2 = st.columns([1, 1])
 
+
 # First main column: Feature weights
 with main_col1:
-    
     with st.container():
-                
-        # Add Reset button next to title
+    # Add Reset button next to title
         col1, col2 = st.columns([3, 1])
         with col1:
             st.subheader("Customize Feature Weights")
@@ -130,72 +121,71 @@ with main_col1:
                 st.session_state.vectors = vectors_weighted
             
 
-with main_col2:
-    # Second container: Artist selection    
-    if selected_artist is None:
-        st.write("Please select an artist")
+# Second main col: Artist selection
+with main_col2:      
+
+    
+    if selected_song is None:
+        st.write("Please select an song")
     else:
-        artist_match = artist_track_[artist_track_['name_x'] == selected_artist]   
-        artist_id = artist_match['artist_id'].values[0]
-        test_fetch = fetch_and_parse_spotify_artist_data(artist_id, token, client_id, client_secret)
-        st.image(test_fetch['artist_image'].iloc[0], use_container_width=True, width=50)
+        song_match = tracks_features[tracks_features['name'] == selected_song]   
+        song_id = song_match['track_id'].values[0]
+        test_fetch = fetch_and_parse_spotify_songs(song_id, token, client_id, client_secret)
+        st.image(test_fetch['cover_image'].values[0], use_container_width=True)
+        st.markdown(f"**{test_fetch['song_name'].values[0]}**<br>{test_fetch['artist_name'].values[0]}", unsafe_allow_html=True)
+        st.link_button('Listen on Spotify', test_fetch['spotify_url'].values[0])
         st.write("") 
-        # Display artist info
-        st.subheader(test_fetch['artist_name'].iloc[0])
-                        
-        st.link_button('Go to Spotify profile', test_fetch['spotify_url'].iloc[0], use_container_width=True)
-                    
 
 st.markdown("---")
 
 # Recommendations container
 with st.container():
-    st.subheader('Similar Artists')
-    if selected_artist is not None:
+    st.subheader('Similar Songs')
+    if selected_song is not None:
         vectors_to_use = st.session_state.get('vectors', vectors)
-        result = get_similar_artists(selected_artist, vectors_to_use, artists_cleaned)
+        result = get_similar_artists(selected_song, vectors_to_use, songs_cleaned)
         
         if isinstance(result, str):
             st.error(result)
             similar_vectors = None  # Reset if error
-            similar_artists = None
+            similar_songs = None
             scores = None
         else:
+            similar_vectors, similar_songs, scores = result
+            #store top1 similar song for radar chart
+            top1_song = similar_songs.iloc[1]['name']
+
             # Create three columns for recommendations
-            similar_vectors, similar_artists, scores = result
-            second_artist = similar_artists.iloc[1]['name']
+            
             rec_cols = st.columns(3, gap="small")
             
              # Only loop through top 3 artists for display
             for idx in range(3):
                 with rec_cols[idx]:
-                    artist = similar_artists.iloc[idx+1]['name']
+                    artist = similar_songs.iloc[idx+1]['name']
                     score = scores[idx+1]
-                    artist_match = artist_track_[artist_track_['name_x'] == artist]   
-                    artist_id = artist_match['artist_id'].values[0]
-                    test_fetch = fetch_and_parse_spotify_artist_data(artist_id, token, client_id, client_secret)
+                    song_match = tracks_features[tracks_features['name'] == artist]   
+                    track_id = song_match['track_id'].values[0]
+                    test_fetch = fetch_and_parse_spotify_songs(track_id, token, client_id, client_secret)
                     # Display artist information
-                    st.image(test_fetch['artist_image'].iloc[0], use_container_width=True, width=50)
-                    st.write("") 
                     
-                    # Display artist info
-                    st.subheader(test_fetch['artist_name'].iloc[0])
-                   
-                    # Display metrics
+                    st.image(test_fetch['cover_image'].values[0], use_container_width=True, width=150)
+                    st.markdown(f"**{test_fetch['song_name'].values[0]}**<br>{test_fetch['artist_name'].values[0]}", unsafe_allow_html=True)
                     col1, col2 = st.columns(2)
                     with col1:
-                        st.link_button('Go to Spotify profile', test_fetch['spotify_url'].iloc[0], use_container_width=True)
+                        st.link_button('Listen on Spotify', test_fetch['spotify_url'].values[0])
                     with col2:
                         st.metric("Similarity Score", f"{score:.4f}")
-
+                    
+                    st.write("") 
 
 # Visualize artist space
 with st.container():
     st.subheader("Visualize Artist Space")
     if similar_vectors is not None:
-        fig = visualize_artist_space(similar_vectors, similar_artists, scores, item_type='artist')
+        fig = visualize_artist_space(similar_vectors, similar_songs, scores,item_type='song')
         st.plotly_chart(fig,  use_container_width=True)
-   
+
 
 # visualize artist audio profile
 with st.container():
@@ -204,12 +194,11 @@ with st.container():
     st.markdown("---")
     
     # error handling if no artist is selected
-    if selected_artist == None or second_artist == None:
+    if selected_song == None or top1_song == None:
         st.write("Please select an artist")
     else:
-        artist1_mean = process_artist_data(selected_artist, artist_track_, audio_features)
-        artist2_mean = process_artist_data(second_artist, artist_track_, audio_features)
-    
-        data_radar = data_to_radar_chart(artist1_mean, artist2_mean)
+        song1 = process_songs(selected_song, tracks_features)
+        song2 = process_songs(top1_song, tracks_features)
+        data_radar = data_to_radar_chart(song1, song2)
         fig = create_radar_chart_new(data_radar)
         st.plotly_chart(fig, use_container_width=True)

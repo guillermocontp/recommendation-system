@@ -1,12 +1,8 @@
 import streamlit as st
-import seaborn as sns
-import matplotlib.pyplot as plt
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 from src.data_processing import (get_artist_features, vectorize_artist_features)
 import plotly.graph_objects as go
-import plotly.express as px
-import altair as alt
 import pandas as pd
 
 

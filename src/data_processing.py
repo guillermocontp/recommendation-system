@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
+
 
 
 
