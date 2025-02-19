@@ -14,25 +14,29 @@ tracks = st.session_state.tracks
 mapping = st.session_state.mapping
 artists = st.session_state.artists
 audio_features = st.session_state.audio_features
-artist_track_ = merge_artist_features(tracks, mapping, artists)
+
 
 
 # Check session state first
-if 'artists' in st.session_state and 'artist_track_' in st.session_state and 'audio_features' in st.session_state:
+if 'artists' in st.session_state and 'audio_features' in st.session_state:
     # Get data from session state
     artists = st.session_state.artists
-    artist_track_ = st.session_state.artist_track_
+    
     audio_features = st.session_state.audio_features
     tracks_features = pd.merge(tracks, audio_features, on='track_id', how='inner')
+    artist_track_ = merge_artist_features(tracks, mapping, artists)
     # Process data
     table_artists = get_artist_features(artists, artist_track_, audio_features)
-    vector_songs= vectorize_artist_features(tracks_features)
-    vectors_artists = vectorize_artist_features(table_artists)
     
+    vectors_artists, _ = vectorize_artist_features(table_artists)
+    
+    # Get 5 random unique indices
+    random_indices = np.random.choice(len(vectors_artists), size=5, replace=False)
+
     # Calculate similarity matrix for first 5 artists
-    n_items = 5
-    similarity_matrix = cosine_similarity(vectors_artists[:n_items])
-    names = artists['name'].iloc[:n_items].tolist()
+    
+    similarity_matrix = cosine_similarity(vectors_artists[random_indices])
+    names = artists['name'].iloc[random_indices].tolist()
     
     # Create heatmap
     fig = go.Figure(data=go.Heatmap(
