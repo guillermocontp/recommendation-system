@@ -40,5 +40,5 @@ By representing songs as n-dimensional vectors, I can compute similarity scores 
 ### Try It Out
 This project is hosted on Streamlit, so you can explore the recommendations and visualizations without running the code locally.
 
-https://recommendation-system-spotify-data.streamlit.app/Artist_recommendation_concept
+https://recommendation-system-spotify-data.streamlit.app/
 
