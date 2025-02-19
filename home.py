@@ -4,7 +4,7 @@ from src.data_processing import load_df
 
 # customizing the page
 st.set_page_config(
-    page_title="**created by Guillermo Contreras**",
+    page_title="**recommendations**",
     page_icon=":guitar:",
     layout="wide", 
     initial_sidebar_state="expanded"

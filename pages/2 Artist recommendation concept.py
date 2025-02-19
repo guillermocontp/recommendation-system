@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import os
-from dotenv import load_dotenv
+
 
 
 from src.data_processing import (data_to_radar_chart, 
@@ -33,9 +33,9 @@ audio_features = st.session_state.audio_features
 artist_track_ = merge_artist_features(tracks, mapping, artists)
 
 # loading Spotify credentials (for API) from .env file
-load_dotenv()
-client_id = os.getenv("CLIENT_ID")
-client_secret = os.getenv("CLIENT_SECRET")
+
+client_id = st.secrets["spotify"]["client_id"]
+client_secret = st.secrets["spotify"]["client_secret"]
 token = get_token(client_id, client_secret)
 
 # Initialize variables for visualization
