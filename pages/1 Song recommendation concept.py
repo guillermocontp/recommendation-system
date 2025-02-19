@@ -131,10 +131,19 @@ with main_col2:
         song_match = tracks_features[tracks_features['name'] == selected_song]   
         song_id = song_match['track_id'].values[0]
         test_fetch = fetch_and_parse_spotify_songs(song_id, token, client_id, client_secret)
-        st.image(test_fetch['cover_image'].values[0], use_container_width=True)
-        st.markdown(f"**{test_fetch['song_name'].values[0]}**<br>{test_fetch['artist_name'].values[0]}", unsafe_allow_html=True)
-        st.link_button('Listen on Spotify', test_fetch['spotify_url'].values[0])
-        st.write("") 
+        song_name = test_fetch['song_name'].iloc[0]
+       # Create two columns for title and button
+        title_col, button_col = st.columns([2, 1])
+        with title_col:
+            st.markdown(f'#### Selected song: {song_name}')
+        with button_col:
+            st.link_button('Go to Spotify profile', 
+                        test_fetch['spotify_url'].iloc[0], 
+                        use_container_width=True)
+        
+        # Image below the columns
+        st.image(test_fetch['cover_image'].iloc[0], use_container_width=True)
+        st.write("")
 
 st.markdown("---")
 
