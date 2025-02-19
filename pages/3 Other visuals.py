@@ -1,7 +1,9 @@
 import streamlit as st
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
-from src.data_processing import (get_artist_features, vectorize_artist_features)
+from src.data_processing import (get_artist_features, 
+                                 vectorize_artist_features,
+                                 merge_artist_features)
 import plotly.graph_objects as go
 import pandas as pd
 
@@ -12,7 +14,7 @@ tracks = st.session_state.tracks
 mapping = st.session_state.mapping
 artists = st.session_state.artists
 audio_features = st.session_state.audio_features
-artist_track_ = st.session_state.artist_track_
+artist_track_ = merge_artist_features(tracks, mapping, artists)
 
 
 # Check session state first
@@ -58,32 +60,4 @@ if 'artists' in st.session_state and 'artist_track_' in st.session_state and 'au
     st.plotly_chart(fig, use_container_width=True)
 
 
-    # Calculate similarity matrix for first 5 artists
-    n_items1 = 5
-    similarity_matrix2 = cosine_similarity(vector_songs[:n_items1])
-    names = tracks['name'].iloc[:n_items1].tolist()
-    
-    # Create heatmap
-    fig2 = go.Figure(data=go.Heatmap(
-        z=similarity_matrix2,
-        x=names,
-        y=names,
-        hoverongaps=False,
-        colorscale='Viridis',
-        text=[[f'{val:.4f}' for val in row] for row in similarity_matrix2],
-        texttemplate='%{text}',
-        textfont={"size": 12},
-        showscale=True
-    ))
-
-    # Update layout
-    fig2.update_layout(
-        title='Artist Similarity Matrix',
-        xaxis_title='Song',
-        yaxis_title='Song',
-        width=700,
-        height=700
-    )
-
-    # Display the plot
-    st.plotly_chart(fig2, use_container_width=True)
+   

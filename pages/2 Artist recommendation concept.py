@@ -125,6 +125,8 @@ with main_col1:
             if st.button("Apply Weights", use_container_width=True):
                 vectors_weighted = apply_feature_weights(vectors, weights)
                 st.session_state.vectors = vectors_weighted
+                # Store with artist-specific key
+                st.session_state.artist_vectors = vectors_weighted
             
 
 with main_col2:
@@ -149,7 +151,7 @@ st.markdown("---")
 with st.container():
     st.subheader('Similar Artists')
     if selected_artist is not None:
-        vectors_to_use = st.session_state.get('vectors', vectors)
+        vectors_to_use = st.session_state.get('artist_vectors', vectors)
         result = get_similar_artists(selected_artist, vectors_to_use, artists_cleaned)
         
         if isinstance(result, str):

@@ -119,6 +119,7 @@ with main_col1:
             if st.button("Apply Weights", use_container_width=True):
                 vectors_weighted = apply_feature_weights(vectors, weights)
                 st.session_state.vectors = vectors_weighted
+                st.session_state.song_vectors = vectors_weighted
             
 
 # Second main col: Artist selection
@@ -142,7 +143,7 @@ st.markdown("---")
 with st.container():
     st.subheader('Similar Songs')
     if selected_song is not None:
-        vectors_to_use = st.session_state.get('vectors', vectors)
+        vectors_to_use = st.session_state.get('song_vectors', vectors)
         result = get_similar_artists(selected_song, vectors_to_use, songs_cleaned)
         
         if isinstance(result, str):

@@ -176,16 +176,31 @@ def get_similar_artists(artist_name, vectors, artists_df, n=20):
         # Get similarity scores for input artist
         artist_similarities = similarity_matrix[artist_idx]
         
-        # Limit n to available artists
-        n = min(n, len(vectors))
+        # Get indices of all artists sorted by similarity
+        sorted_indices = np.argsort(-artist_similarities)
         
-        # Get indices of top n similar artists (including self)
-        similar_indices = np.argsort(-artist_similarities)[:n]
+        # Filter out the original artist and duplicates
+        filtered_indices = []
+        seen_names = set()
+        
+        # Add indices while filtering duplicates
+        for idx in sorted_indices:
+            name = artists_df.iloc[idx]['name']
+            if name != artist_name and name not in seen_names:
+                filtered_indices.append(idx)
+                seen_names.add(name)
+            
+            # Break if we have enough unique artists
+            if len(filtered_indices) >= n:
+                break
+                
+        # Convert to numpy array and take first n
+        filtered_indices = np.array(filtered_indices[:n])
         
         # Get vectors and names for similar artists
-        similar_vectors = vectors[similar_indices]
-        similar_artists = artists_df.iloc[similar_indices]
-        similarity_scores = artist_similarities[similar_indices]
+        similar_vectors = vectors[filtered_indices]
+        similar_artists = artists_df.iloc[filtered_indices]
+        similarity_scores = artist_similarities[filtered_indices]
         
         return similar_vectors, similar_artists, similarity_scores
         
