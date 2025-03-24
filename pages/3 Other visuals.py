@@ -5,10 +5,12 @@ from src.data_processing import (get_artist_features,
                                  vectorize_artist_features,
                                  merge_artist_features,
                                  track_page_navigation,
-                                 track_button_clicks)
+                                 track_button_clicks,
+                                 inject_ga_with_variant)
 import plotly.graph_objects as go
 import pandas as pd
 
+inject_ga_with_variant()
 
 # Track page view
 track_page_navigation("Other Visuals")  

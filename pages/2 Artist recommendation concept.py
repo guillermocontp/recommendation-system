@@ -13,7 +13,8 @@ from src.data_processing import (data_to_radar_chart,
                                  get_similar_artists,
                                     merge_artist_features,
                                     track_button_clicks,
-                                    track_page_navigation
+                                    track_page_navigation,
+                                    inject_ga_with_variant
                                     )
 
 from src.visualization import (create_radar_chart_new, 
@@ -24,6 +25,7 @@ from src.spotify_widget import (fetch_and_parse_spotify_artist_data,
                                 get_token                                
                                 )
 
+inject_ga_with_variant()
 
 # Track page view
 track_page_navigation("Artists")  

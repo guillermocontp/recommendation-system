@@ -33,15 +33,23 @@ track_button_clicks()
 with st.container():
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        # describing the dashboard
-        st.markdown("# <h1 style='text-align: center;'> :rainbow[SONG RECOMMENDATION SYSTEM]</h1>", unsafe_allow_html=True)
-        st.write("")
-        st.markdown("This recommendation system leverages **:green[Spotify's]** API to suggest songs or artists similar to your selection.")
-        st.write("Using each song’s audio features as vectors, it applies *cosine similarity* to identify the closest matches.")
-        st.write("Additionally, you can adjust the weights of different features to personalize your recommendations based on what matters most to you.")
-        st.write("To help you explore these relationships, the app provides various visualizations that compare songs and artists in different ways.")
-        st.write("Discover new music, fine-tune your recommendations, and enjoy the experience! :guitar:")
-        st.markdown("### <h2 style='text-align: center;'>🎵🎵 ***:green[Enjoy!]*** 🎵🎵</h2>", unsafe_allow_html=True)
+        # Different title and content based on variant
+        if st.session_state.get("ab_variant", "A") == "A":
+            # Original version
+            # describing the dashboard
+            st.markdown("# <h1 style='text-align: center;'> :rainbow[SONG RECOMMENDATION SYSTEM]</h1>", unsafe_allow_html=True)
+            st.write("")
+            st.markdown("This recommendation system leverages **:green[Spotify's]** API to suggest songs or artists similar to your selection.")
+            st.write("Using each song’s audio features as vectors, it applies *cosine similarity* to identify the closest matches.")
+            st.write("Additionally, you can adjust the weights of different features to personalize your recommendations based on what matters most to you.")
+            st.write("To help you explore these relationships, the app provides various visualizations that compare songs and artists in different ways.")
+            st.write("Discover new music, fine-tune your recommendations, and enjoy the experience! :guitar:")
+            st.markdown("### <h2 style='text-align: center;'>🎵🎵 ***:green[Enjoy!]*** 🎵🎵</h2>", unsafe_allow_html=True)
+        else:
+            st.markdown("# <h1 style='text-align: center;'> :rainbow[SONG RECOMMENDATION SYSTEM]</h1>", unsafe_allow_html=True)
+            st.write("")
+            st.markdown("### <h2 style='text-align: center;'>🎵🎵 ***:green[Enjoy!]*** 🎵🎵</h2>", unsafe_allow_html=True)
+
 st.markdown("---")
 st.markdown("""
 

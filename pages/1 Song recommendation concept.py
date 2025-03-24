@@ -11,8 +11,8 @@ from src.data_processing import (data_to_radar_chart,
                                  apply_feature_weights, 
                                  get_similar_artists,
                                     track_page_navigation,
-                                    track_button_clicks
-                                    )
+                                    track_button_clicks,
+                                    inject_ga_with_variant)
 
 from src.visualization import create_radar_chart_new, visualize_artist_space
 
@@ -21,6 +21,8 @@ from src.spotify_widget import (
                                 get_token
                                 )
 
+
+inject_ga_with_variant()
 
 # Track page view
 track_page_navigation("Songs")  
@@ -76,13 +78,19 @@ with st.container(border=True):
         st.markdown('### :rainbow[Song recommendations]')
         
         st.write(" ")  
-        st.markdown("""
-                    * Select a song from the list. The system will recommend three similar songs based on audio features.
-                    * Adjust feature weights to customize the recommendations—prioritize certain aspects like danceability, energy, or tempo.
-                        * With the feature weighting option, you can adjust the importance of each attribute (e.g., giving more weight to danceability or tempo) to refine the recommendations.
-                    * Explore visualizations below to compare the selected song and recommendations in different ways, including radar charts and t-SNE projections.
-                    """)
-               
+        if st.session_state.get("ab_variant", "A") == "A":
+            st.markdown("""
+                        * Select a song from the list. The system will recommend three similar songs based on audio features.
+                        * Adjust feature weights to customize the recommendations—prioritize certain aspects like danceability, energy, or tempo.
+                            * With the feature weighting option, you can adjust the importance of each attribute (e.g., giving more weight to danceability or tempo) to refine the recommendations.
+                        * Explore visualizations below to compare the selected song and recommendations in different ways, including radar charts and t-SNE projections.
+                        """)
+        else:
+            st.markdown("""
+                        * Select a song from the list
+                        * Adjust feature weights
+                        * Explore visualizations below  
+                            """)              
 
 # Main page layout, two columns
 main_col1, main_col2 = st.columns([1, 1])
@@ -144,7 +152,7 @@ with main_col2:
 
     
     if selected_song is None:
-        st.write("Please select an song")
+        st.write("Please select a song")
     else:
         song_match = tracks_features[tracks_features['name'] == selected_song]   
         song_id = song_match['track_id'].values[0]
