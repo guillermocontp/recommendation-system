@@ -1,6 +1,12 @@
 # importing necessary libraries
 import streamlit as st
 from src.data_processing import load_df
+from src.data_processing import inject_ga_with_variant, setup_ab_testing
+
+
+
+# Setting AB testing, creates two session states A and B for ab testing
+setup_ab_testing()
 
 # customizing the page
 st.set_page_config(
@@ -9,6 +15,10 @@ st.set_page_config(
     layout="wide", 
     initial_sidebar_state="expanded"
 )
+
+
+# Inject GA script: this initializes Google Analytics tracking
+inject_ga_with_variant()
 
 with st.container():
     col1, col2, col3 = st.columns([1, 2, 1])

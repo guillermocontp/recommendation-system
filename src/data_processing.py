@@ -3,8 +3,8 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
-
-
+import streamlit.components.v1 as components
+import random
 
 
 
@@ -318,3 +318,49 @@ def reset_weights_callback():
 
     # Reset vectors to original state (no weights applied)
     st.session_state.vectors = st.session_state.get('original_vectors', None)
+
+
+    # Add this at the top of your home.py file
+
+
+# Replace with your actual Measurement ID
+GA_MEASUREMENT_ID = "G-XXXXXXXXXX"  
+
+def inject_ga_with_variant():
+    GA_MEASUREMENT_ID = "G-D428JCS6W2"  # Replace with your actual Measurement ID
+    
+    # Use .get() method with default values to prevent KeyError
+    variant = st.session_state.get("ab_variant", "not_set")
+    variant_features = st.session_state.get("variant_features", "not_set")
+    
+    GA_SCRIPT = f"""
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={GA_MEASUREMENT_ID}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){{dataLayer.push(arguments);}};
+      gtag('js', new Date());
+      gtag('config', '{GA_MEASUREMENT_ID}', {{
+        'ab_variant': '{variant}',
+        'variant_features': '{variant_features}'
+      }});
+    </script>
+    """
+    components.html(GA_SCRIPT, height=0)
+
+    # A/B testing setup
+def setup_ab_testing():
+    """Initialize A/B testing variants if not already assigned"""
+    if "ab_variant" not in st.session_state:
+        # Randomly assign user to variant A or B (50/50 split)
+        variant = random.choice(["A", "B"])
+        st.session_state.ab_variant = variant
+        
+        # Track assignment event
+        if variant == "A":
+            st.session_state.variant_features = "original"
+        else:
+            st.session_state.variant_features = "enhanced"
+            
+        # Log the variant assignment (for debugging)
+        print(f"User assigned to variant: {variant}")
