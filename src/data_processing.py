@@ -331,37 +331,54 @@ def inject_ga_with_variant():
     variant = st.session_state.get("ab_variant", "not_set")
     variant_features = st.session_state.get("variant_features", "not_set")
     
-    # Debug message visible in browser console
-    debug_script = """
+    # Create a more robust GA script with error handling
+    GA_SCRIPT = f"""
     <script>
-      console.log('GA Debugging: Script loaded');
-      console.log('GA ID: G-D428JCS6W2');
+      try {{
+        // Debug message
+        console.log('Analytics: Installing GA {GA_MEASUREMENT_ID}');
+        
+        // Load GA script
+        (function(w,d,s,l,i){{
+            w[l]=w[l]||[];
+            w[l].push({{'gtm.start': new Date().getTime(),event:'gtm.js'}});
+            var f=d.getElementsByTagName(s)[0],
+                j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';
+            j.async=true;
+            j.src='https://www.googletagmanager.com/gtag/js?id='+i+dl;
+            f.parentNode.insertBefore(j,f);
+            
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){{dataLayer.push(arguments);}}
+            gtag('js', new Date());
+            gtag('config', '{GA_MEASUREMENT_ID}', {{
+              'ab_variant': '{variant}',
+              'variant_features': '{variant_features}'
+            }});
+            
+            // Store variant in localStorage for cross-page consistency
+            localStorage.setItem('ab_variant', '{variant}');
+            localStorage.setItem('variant_features', '{variant_features}');
+            
+            console.log('Analytics: Successfully loaded');
+        }})(window,document,'script','dataLayer','{GA_MEASUREMENT_ID}');
+      }} catch (e) {{
+        console.error('Analytics error:', e);
+      }}
     </script>
     """
     
-    # Complete HTML document structure for GA script
-    GA_SCRIPT = f"""
-    <head>
-      <!-- Google tag (gtag.js) -->
-      <script async src="https://www.googletagmanager.com/gtag/js?id={GA_MEASUREMENT_ID}"></script>
-      <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){{dataLayer.push(arguments);}};
-        gtag('js', new Date());
-        gtag('config', '{GA_MEASUREMENT_ID}', {{
-          'ab_variant': '{variant}',
-          'variant_features': '{variant_features}'
-        }});
-        console.log('GA Debugging: gtag configured');
-      </script>
-    </head>
-    """
+    # Inject script
+    components.html(GA_SCRIPT, height=0)
     
-    # Inject both scripts
-    components.html(debug_script + GA_SCRIPT, height=0)
+    # Add visible indicator that remains consistent
+    st.session_state["analytics_enabled"] = True
     
-    # Add a visible indicator during development
-    st.sidebar.caption("📊 Analytics enabled")
+    # Use a more reliable method for showing the indicator
+    if st.session_state.get("analytics_enabled", False):
+        with st.sidebar:
+            st.markdown("#### 📊 Analytics")
+            st.caption(f"Variant: {variant}")
 
     # A/B testing setup
 def setup_ab_testing():

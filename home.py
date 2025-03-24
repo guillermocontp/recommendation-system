@@ -24,6 +24,22 @@ st.set_page_config(
 # Inject GA script: this initializes Google Analytics tracking
 inject_ga_with_variant()
 
+# Add this right after inject_ga_with_variant() call
+if "analytics_enabled" in st.session_state:
+    # Verify analytics loading status
+    st.markdown("""
+    <script>
+    // Check if GA loaded properly
+    setTimeout(function() {
+        if (typeof gtag === 'function') {
+            console.log('Analytics verified: GA function available');
+        } else {
+            console.error('Analytics verification failed: GA function not found');
+        }
+    }, 2000);
+    </script>
+    """, unsafe_allow_html=True)
+
 # Track page view
 track_page_navigation("Home Page")  
 
