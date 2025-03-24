@@ -324,28 +324,44 @@ def reset_weights_callback():
 
 
 
-
 def inject_ga_with_variant():
-    GA_MEASUREMENT_ID = "G-D428JCS6W2"  # Replace with your actual Measurement ID
+    GA_MEASUREMENT_ID = "G-D428JCS6W2"  # Your measurement ID
     
     # Use .get() method with default values to prevent KeyError
     variant = st.session_state.get("ab_variant", "not_set")
     variant_features = st.session_state.get("variant_features", "not_set")
     
-    GA_SCRIPT = f"""
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id={GA_MEASUREMENT_ID}"></script>
+    # Debug message visible in browser console
+    debug_script = """
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){{dataLayer.push(arguments);}};
-      gtag('js', new Date());
-      gtag('config', '{GA_MEASUREMENT_ID}', {{
-        'ab_variant': '{variant}',
-        'variant_features': '{variant_features}'
-      }});
+      console.log('GA Debugging: Script loaded');
+      console.log('GA ID: G-D428JCS6W2');
     </script>
     """
-    components.html(GA_SCRIPT, height=0)
+    
+    # Complete HTML document structure for GA script
+    GA_SCRIPT = f"""
+    <head>
+      <!-- Google tag (gtag.js) -->
+      <script async src="https://www.googletagmanager.com/gtag/js?id={GA_MEASUREMENT_ID}"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){{dataLayer.push(arguments);}};
+        gtag('js', new Date());
+        gtag('config', '{GA_MEASUREMENT_ID}', {{
+          'ab_variant': '{variant}',
+          'variant_features': '{variant_features}'
+        }});
+        console.log('GA Debugging: gtag configured');
+      </script>
+    </head>
+    """
+    
+    # Inject both scripts
+    components.html(debug_script + GA_SCRIPT, height=0)
+    
+    # Add a visible indicator during development
+    st.sidebar.caption("📊 Analytics enabled")
 
     # A/B testing setup
 def setup_ab_testing():
