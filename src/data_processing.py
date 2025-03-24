@@ -323,8 +323,7 @@ def reset_weights_callback():
     # Add this at the top of your home.py file
 
 
-# Replace with your actual Measurement ID
-GA_MEASUREMENT_ID = "G-XXXXXXXXXX"  
+
 
 def inject_ga_with_variant():
     GA_MEASUREMENT_ID = "G-D428JCS6W2"  # Replace with your actual Measurement ID
@@ -364,3 +363,73 @@ def setup_ab_testing():
             
         # Log the variant assignment (for debugging)
         print(f"User assigned to variant: {variant}")
+
+
+def track_page_navigation(page_name):
+    """
+    Tracks page navigation events in Google Analytics
+    Args:
+        page_name: Name of the current page
+    """
+    GA_MEASUREMENT_ID = "G-D428JCS6W2"  # Your Google Analytics ID
+    
+    # Get current variant info
+    variant = st.session_state.get("ab_variant", "not_set")
+    variant_features = st.session_state.get("variant_features", "not_set")
+    
+    # Create tracking script for page view
+    tracking_script = f"""
+    <script>
+        // Send page view event to Google Analytics
+        gtag('event', 'page_view', {{
+            'page_title': '{page_name}',
+            'page_location': window.location.href,
+            'ab_variant': '{variant}',
+            'variant_features': '{variant_features}'
+        }});
+        
+        console.log('Tracked page view: {page_name}');
+    </script>
+    """
+    components.html(tracking_script, height=0)
+
+
+# Add this to data_processing.py
+def track_button_clicks():
+    """
+    Track clicks on common buttons by their text content
+    """
+    tracking_code = """
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add a small delay to ensure buttons are rendered
+        setTimeout(function() {
+            // Find all buttons on the page
+            document.querySelectorAll('button').forEach(function(button) {
+                // Check if we've already attached a listener
+                if (!button.hasAttribute('data-tracked')) {
+                    // Mark as tracked to avoid duplicate events
+                    button.setAttribute('data-tracked', 'true');
+                    
+                    // Add click listener
+                    button.addEventListener('click', function() {
+                        // Get button text as identifier
+                        var buttonText = button.innerText.trim();
+                        
+                        // Track the click event
+                        if (typeof gtag === 'function') {
+                            gtag('event', 'button_click', {
+                                'button_text': buttonText,
+                                'page_path': window.location.pathname,
+                                'ab_variant': sessionStorage.getItem('ab_variant') || 'not_set'
+                            });
+                            console.log('Tracked click on button: ' + buttonText);
+                        }
+                    });
+                }
+            });
+        }, 1000); // 1 second delay
+    });
+    </script>
+    """
+    components.html(tracking_code, height=0)

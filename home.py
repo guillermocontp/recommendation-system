@@ -1,7 +1,11 @@
 # importing necessary libraries
 import streamlit as st
-from src.data_processing import load_df
-from src.data_processing import inject_ga_with_variant, setup_ab_testing
+from src.data_processing import (load_df, 
+                                inject_ga_with_variant, 
+                                setup_ab_testing,
+                                track_page_navigation,
+                                track_button_clicks)
+
 
 
 
@@ -19,6 +23,12 @@ st.set_page_config(
 
 # Inject GA script: this initializes Google Analytics tracking
 inject_ga_with_variant()
+
+# Track page view
+track_page_navigation("Home Page")  
+
+# Track button clicks on this page
+track_button_clicks()
 
 with st.container():
     col1, col2, col3 = st.columns([1, 2, 1])
@@ -85,8 +95,7 @@ with st.container():
     col1, col2 = st.columns([1, 3])
     with col1:
         st.markdown(' ***:green[Guillermo Contreras]***')
-        st.write("Aspiring Data engineer | Machine Learning Engineer")
-        st.write("Passionate about data, music, and technology.")   
+        st.write("Aspiring Data engineer ")
         st.markdown("***Contact information:***")
 
 

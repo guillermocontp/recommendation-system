@@ -9,8 +9,9 @@ from src.data_processing import (data_to_radar_chart,
                                     reset_weights_callback,
                                  vectorize_artist_features, 
                                  apply_feature_weights, 
-                                  
-                                 get_similar_artists
+                                 get_similar_artists,
+                                    track_page_navigation,
+                                    track_button_clicks
                                     )
 
 from src.visualization import create_radar_chart_new, visualize_artist_space
@@ -20,6 +21,12 @@ from src.spotify_widget import (
                                 get_token
                                 )
 
+
+# Track page view
+track_page_navigation("Songs")  
+
+# Track button clicks on this page
+track_button_clicks()
 
 # bring the necessary data
 tracks = st.session_state.tracks
