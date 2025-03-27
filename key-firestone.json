@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "analytics-for-streamlit-app",
+  "private_key_id": "5a894fd1af3274a2a8560c477aeb5e53ca0eec08",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDVvEXDIQzsoqkt\nSw7ihhdCN9jRPAAW5raXpcTs77yFTserNNMDuqLvqm+I7tLD4XPLDT3nW0NXxk/M\nqRIJykChlR+hjEhaCaSxCjtmCeeJKS9rabxXgJzeIhRKwZqokp6jTsi9LiiAAWQl\n0Wqz3Evtxr+Vn58x4/itUGlDUlVGIh6MmQIdprMrKe1lkcln3iBMk8JZsSnuquwI\nFNiaRNN87Y7TLQMhke2A2Sc7QuDxiT/iDkWukf49DTgQskIRDH4suHkNjr8C+Q6s\nAZ6XV2pvw2HBklScwAzLNfoUly8Jnnn8HWCWivuyWrufuUs08BdYaRckN5hNm/Rq\njtuzosvBAgMBAAECggEAH8/yiD0SmeQKDzJFSGUR8Cq0zEvEbaQwWDj1qxhxtFvJ\n70sg/0SXvNle2YBGgZ48aGQTqyxTxSxAs2MUyr0+Sm6SMy7YlAIsb6douOLPggRN\nyQyHWnTLpGppH8laNi4Ai6kNys6ke4z5dYGKgrPO31i+KkyEWt4mJNG7oSgPhi0H\nCS01G+B8X+X5OdJOfgHt3CPPy458cJs09JGcy8p/M6koGQxbIXRaLSxczNmqJx7i\nHheZkMt0bGJQPb1I26rTF9PxvE6oBeAZHGlopMGkeXdHkd6hzt18v4SDliVhgcSU\nJtaUVjLcM/Pnv3GSwkMUwoFo7tnnCoy8qZo8CcxOywKBgQD9W6hw+WATF8KwcVK/\nnmVWQd2MsUnd9czObyWGWHgiUJKASI1JqW0/rhP6jVNw4OuknmFOsW5yoXCPVWaW\ngqRHEu38GeAgnP5dBBncz+CHdSxLREV7hIabCURk2VmckWevwQWLw2LFqKEsK7JQ\nanZejrf798VFmm0vvQOqBrGCZwKBgQDX9tdxlKojFyJKg7/MMk6GuTFFVEHEe8iR\nQwxxYqL6Gh6fXYLdO21zdJC2futov5XfDdRrQPrVr8ZEIsazau7hilNWWmD+GOw/\nMO0fWU9AbpVUG24ONpFznu1KDOg1Y+lsg76OiQm7HVbxMOLL7ETq8D2AatIJ8FnR\nBFYZH4d3lwKBgDSpNou06clOKQNvqpl1nO6e5iP2PbpK+vT1mUEhZmcLhEfxzJxB\nARo5XqG3el5+AbzHxsYKj0B4WeMRBy/Fm8vCHYFHB5T/zMccsRt6gdrl+fzzBdY0\np53WAUdM/hlTB9A6OKLiS8d103pQ4tFgL5Zb59YRnAlpncRMb1SJ65+FAoGAaSZZ\nTYbps74exxMQvnY7/6KJl8znXKg8RmXT2B0DZyxyfnuELP0zVESL9R8ktVKawQi1\nxSbVOlej/CbGgjLtbkjwPJoyoWU3GalTurC8Qo3VDSdx1V/CP/5AYI6aPOyRiXE3\nxaR5ZW5ql3KK6mj2QUGJYE4iSA6LXJZ06TSNu68CgYEAi/QqIvxpoTBOguoeRiv8\nyO5Ivu9QHRe/F0NMd3yYz6NhoPs8aFyZM417NJP4A1VY5Bk+rWQcERdj5jFnz0Mg\nDXDbithvOAcprzd66CF2ALd/XvKvzcUnEGsrSCvfG62usXo2ov5ndw9l+wA3Uluz\nTqY6Aq5DU5zilQBx8f3Y2uI=\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-fbsvc@analytics-for-streamlit-app.iam.gserviceaccount.com",
+  "client_id": "114769889754329783954",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40analytics-for-streamlit-app.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
