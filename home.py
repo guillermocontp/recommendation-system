@@ -3,12 +3,9 @@ import streamlit as st
 from src.data_processing import (load_df, 
                                 inject_ga_with_variant, 
                                 setup_ab_testing,
-                                track_page_navigation,
-                                track_button_clicks)
+                                )
 
-import json
-from google.oauth2 import service_account
-from google.cloud import firestore
+
 import streamlit_analytics2 as sta
 
 
