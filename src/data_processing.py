@@ -332,39 +332,18 @@ def inject_ga_with_variant():
     variant_features = st.session_state.get("variant_features", "not_set")
     
     # Create a more robust GA script with error handling
-    GA_SCRIPT = f"""
+    GA_SCRIPT = """
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-8BYLEYJGXT"></script>
     <script>
-      try {{
-        // Debug message
-        console.log('Analytics: Installing GA {GA_MEASUREMENT_ID}');
-        
-        // Load GA script
-        (function(w,d,s,l,i){{
-            w[l]=w[l]||[];
-            w[l].push({{'gtm.start': new Date().getTime(),event:'gtm.js'}});
-            var f=d.getElementsByTagName(s)[0],
-                j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';
-            j.async=true;
-            j.src='https://www.googletagmanager.com/gtag/js?id='+i+dl;
-            f.parentNode.insertBefore(j,f);
-            
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){{dataLayer.push(arguments);}}
-            gtag('js', new Date());
-            gtag('config', '{GA_MEASUREMENT_ID}', {{
-              'ab_variant': '{variant}',
-              'variant_features': '{variant_features}'
-            }});
-            
-            // Store variant in localStorage for cross-page consistency
-            localStorage.setItem('ab_variant', '{variant}');
-            localStorage.setItem('variant_features', '{variant_features}');
-            
-            console.log('Analytics: Successfully loaded');
-        }})(window,document,'script','dataLayer','{GA_MEASUREMENT_ID}');
-      }} catch (e) {{
-        console.error('Analytics error:', e);
-      }}
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-8BYLEYJGXT', {
+        'ab_variant': '""" + variant + """',
+        'variant_features': '""" + variant_features + """'
+      });
+      console.log('GA initialized with variant: """ + variant + """');
     </script>
     """
     
