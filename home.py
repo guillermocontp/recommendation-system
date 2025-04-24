@@ -5,12 +5,6 @@ from src.data_processing import (load_df,
                                 )
 
 
-import streamlit_analytics2 as sta
-
-
-
-
-
 # customizing the page
 st.set_page_config(
     page_title="**recommendations**",
@@ -18,10 +12,6 @@ st.set_page_config(
     layout="wide", 
     initial_sidebar_state="expanded"
 )
-
-
-
-
 
 
 with st.container():
